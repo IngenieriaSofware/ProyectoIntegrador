@@ -124,7 +124,7 @@ public class App {
             if (currentUsername == null || loggedIn == null || !loggedIn) {
                 System.out.println("DEBUG: Acceso no autorizado a /dashboard. Redirigiendo a /login.");
                 // Redirige al login con un mensaje de error.
-                res.redirect("/login?error=Debes iniciar sesión para acceder a esta página.");
+                res.redirect("/?error=Debes iniciar sesión para agregar profesores.");
                 return null; // Importante retornar null después de una redirección.
             }
 
@@ -297,7 +297,7 @@ public class App {
             try {
                 // --- Creación y guardado del usuario usando el modelo ActiveJDBC ---
                 User newUser = new User(); // Crea una nueva instancia de tu modelo User.
-                // ¡ADVERTENCIA DE SEGURIDAD CRÍTICA!
+                // ¡ADVERTENCIA DE SEGURIDAD CRITICA!
                 // En una aplicación real, las contraseñas DEBEN ser hasheadas (ej. con BCrypt)
                 // ANTES de guardarse en la base de datos, NUNCA en texto plano.
                 // (Nota: El código original tenía la contraseña en texto plano aquí.
@@ -391,10 +391,10 @@ public class App {
 
         get("/professor/list", (req, res) -> {
 
-            // 1. DEFINIMOS EL TAMAÑO DE LA PÁGINA
+            // 1. DEFINIMOS EL TAMAÑO DE LA PAGINA
             final int PAGE_SIZE = 5; // Mostrar 5 profesores por página
 
-            // 2. OBTENEMOS LA PÁGINA ACTUAL DESDE LA URL (ej: /professor/list?page=2)
+            // 2. OBTENEMOS LA PAGINA ACTUAL DESDE LA URL (ej: /professor/list?page=2)
             int currentPage = 1;
             try {
                 if (req.queryParams("page") != null) {
@@ -408,17 +408,16 @@ public class App {
             // 3. OBTENEMOS EL CONTEO TOTAL DE PROFESORES
             // (Este método 'count()' depende de tu ORM/Base de datos)
             long totalProfessors = Professor.count(); // o Profesor.count("1=1")
-
-            // 4. CALCULAMOS EL TOTAL DE PÁGINAS
+            // 4. CALCULAMOS EL TOTAL DE PAGINAS
             // (usamos Math.ceil para redondear hacia arriba)
             int totalPages = (int) Math.ceil((double) totalProfessors / PAGE_SIZE);
 
             // 5. CALCULAMOS EL 'OFFSET' (cuántos registros saltar)
             int offset = (currentPage - 1) * PAGE_SIZE;
 
-            // 6. OBTENEMOS SOLO LOS PROFESORES DE ESTA PÁGINA
+            // 6. OBTENEMOS SOLO LOS PROFESORES DE ESTA PAGINA
             // (Esta sintaxis .limit().offset() es común en ORMs como ActiveJDBC)
-            // 6. OBTENEMOS SOLO LOS PROFESORES DE ESTA PÁGINA
+            // 6. OBTENEMOS SOLO LOS PROFESORES DE ESTA PAGINA
             List<Map<String, Object>> professors = Professor.findAll()
                     .limit(PAGE_SIZE)
                     .offset(offset)
@@ -428,7 +427,7 @@ public class App {
             Map<String, Object> model = new HashMap<>();
             model.put("professors", professors); // La lista (ahora de 5 profes)
 
-            // 8. CONSTRUIMOS LA LISTA DE PÁGINAS PARA MUSTACHE
+            // 8. CONSTRUIMOS LA LISTA DE PAGINAS PARA MUSTACHE
             // (Mustache no puede hacer loops "for i=1 a 10", así que lo hacemos en Java)
             List<Map<String, Object>> pages = new ArrayList<>();
             for (int i = 1; i <= totalPages; i++) {
