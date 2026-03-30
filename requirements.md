@@ -50,11 +50,16 @@ Para asegurar la calidad del software, el sistema debe cumplir con:
 * **Mustache:** Sistema de plantillas para renderizar las vistas de forma dinámica.
 * **JDBC:** Para una gestión directa y eficiente de las consultas SQL.
 
----
-
 ## 6. Seguimiento y Organización
 
 ### Plazo estimado
+El proyecto se desarrolla según el calendario de Ingeniería de Software II..
+
 ### Cambios de alcance ocurridos
+No se registran cambios; el alcance se mantiene fiel a los requerimientos de la Oficina de Alumnos detallados en la narrativa inicial.
+
 ### Problemas encontrados
+El desafío principal fue modelar en UML la lógica de correlatividades y la asignación de múltiples roles docentes por período.
+
 ### Forma de organización del equipo
+Para este práctico integrador, el equipo de 6 integrantes distribuyó las responsabilidades asignando tres responsables por cada ejercicio solicitado alternandolo.
