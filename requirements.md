@@ -63,3 +63,377 @@ El desafío principal fue modelar en UML la lógica de correlatividades y la asi
 
 ### Forma de organización del equipo
 Para este práctico integrador, el equipo de 6 integrantes distribuyó las responsabilidades asignando tres responsables por cada ejercicio solicitado alternandolo.
+
+---
+
+## 7. Diagrama de Arquitectura del Sistema
+
+El sistema sigue una arquitectura **Cliente-Servidor en tres capas** (Presentación, Lógica de Negocio y Persistencia), desplegada como una aplicación web monolítica empaquetada en un JAR ejecutable.
+
+### 7.1 Arquitectura General (Vista de Contexto)
+
+```
+     ┌──────────────┐   ┌──────────────┐   ┌──────────────┐
+     │ Administrador │   │  Estudiante  │   │   Profesor   │
+     │(Of. Alumnos)  │   │              │   │              │
+     └──────┬───────┘   └──────┬───────┘   └──────┬───────┘
+            │                  │                   │
+            │  HTTP Request    │  HTTP Request      │  HTTP Request
+            ▼                  ▼                   ▼
+     ┌─────────────────────────────────────────────────────┐
+     │          Sistema de Gestión Estudiantil              │
+     │    ┌───────────────────────────────────────────┐    │
+     │    │       Aplicación Web (Java + Spark)       │    │
+     │    │             Puerto 8080                    │    │
+     │    └─────────────────────┬─────────────────────┘    │
+     └──────────────────────────┼──────────────────────────┘
+                                │
+                                │  JDBC / ActiveJDBC
+                                ▼
+                       ┌────────────────┐
+                       │    SQLite       │
+                       │   (dev.db)      │
+                       └────────────────┘
+```
+
+### 7.2 Arquitectura en Capas
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                   CAPA DE PRESENTACIÓN (Cliente)                    │
+│                                                                     │
+│  ┌─────────────┐  ┌────────────────────┐  ┌─────────┐  ┌────────┐ │
+│  │  Navegador   │  │ Plantillas Mustache│  │   CSS   │  │   JS   │ │
+│  │    Web       │  │  login.mustache    │  │ login-  │  │ login- │ │
+│  │              │  │  dashboard.mustache│  │ style   │  │ script │ │
+│  │              │  │  professor_form    │  │  .css   │  │  .js   │ │
+│  │              │  │  professor_list    │  │         │  │        │ │
+│  │              │  │  user_form.mustache│  │         │  │        │ │
+│  │              │  │  error.mustache    │  │         │  │        │ │
+│  └──────┬──────┘  └────────────────────┘  └─────────┘  └────────┘ │
+└─────────┼───────────────────────────────────────────────────────────┘
+          │ HTTP GET / POST
+          ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│              CAPA DE APLICACIÓN (Servidor - Spark Framework)        │
+│                                                                     │
+│  ┌──────────────────┐  ┌──────────────┐  ┌───────────────────────┐ │
+│  │  Rutas HTTP       │  │   Filtros    │  │  Control de Sesión    │ │
+│  │  (App.java)       │  │   Spark      │  │  Autenticación        │ │
+│  │  GET / POST       │  │  before:     │  │  con BCrypt           │ │
+│  │  endpoints        │  │  abrir DB    │  │                       │ │
+│  │                   │  │  after:      │  │                       │ │
+│  │                   │  │  cerrar DB   │  │                       │ │
+│  └────────┬─────────┘  └──────────────┘  └───────────────────────┘ │
+│           │                                                         │
+│  ┌────────┴────────────┐  ┌───────────────────────┐                │
+│  │  MustacheTemplate   │  │  Jackson ObjectMapper  │                │
+│  │  Engine (render)    │  │  (Serialización JSON)  │                │
+│  └─────────────────────┘  └───────────────────────┘                │
+└─────────┬───────────────────────────────────────────────────────────┘
+          │
+          ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                    CAPA DE MODELO / DOMINIO                         │
+│                                                                     │
+│  ┌───────────────────────┐    ┌───────────────────────────┐        │
+│  │     User (Model)      │    │     Professor (Model)     │        │
+│  │  Tabla: users          │    │  Tabla: professors         │        │
+│  │  Campos: id, name,    │    │  Campos: id, dni, name,   │        │
+│  │          password      │    │    email, department,      │        │
+│  │                       │    │    phone, created_at,      │        │
+│  │                       │    │    updated_at              │        │
+│  └───────────┬───────────┘    └─────────────┬─────────────┘        │
+└──────────────┼──────────────────────────────┼──────────────────────┘
+               │                              │
+               ▼                              ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                     CAPA DE PERSISTENCIA                            │
+│                                                                     │
+│  ┌───────────────┐    ┌──────────────────┐    ┌────────────────┐   │
+│  │  ActiveJDBC   │───▶│  SQLite JDBC     │───▶│    SQLite      │   │
+│  │    ORM        │    │    Driver         │    │   (dev.db)     │   │
+│  └───────────────┘    └──────────────────┘    └────────────────┘   │
+└─────────────────────────────────────────────────────────────────────┘
+               ▲
+               │ Configuración
+┌──────────────┴──────────────────────────────────────────────────────┐
+│                    CAPA DE CONFIGURACIÓN                            │
+│                                                                     │
+│             ┌─────────────────────────────────┐                    │
+│             │      DBConfigSingleton          │                    │
+│             │      (Patrón Singleton)         │                    │
+│             │  driver: org.sqlite.JDBC        │                    │
+│             │  url: jdbc:sqlite:./db/dev.db   │                    │
+│             │  user: (vacío)                  │                    │
+│             │  pass: (vacío)                  │                    │
+│             └─────────────────────────────────┘                    │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+### 7.3 Diagrama de Componentes y Responsabilidades
+
+```
+┌──────────────────────────────────────────────────────────────────────────────────┐
+│                              COMPONENTES DEL SISTEMA                             │
+├─────────────────────┬────────────────────────────────────────────────────────────┤
+│  Componente         │  Responsabilidad                                           │
+├─────────────────────┼────────────────────────────────────────────────────────────┤
+│  App.java           │  Punto de entrada. Configura puerto, rutas HTTP            │
+│                     │  (GET/POST), filtros before/after, manejo de errores       │
+│                     │  (404/500). Orquesta toda la lógica de la aplicación.      │
+├─────────────────────┼────────────────────────────────────────────────────────────┤
+│  DBConfigSingleton  │  Patrón Singleton. Centraliza la configuración de          │
+│                     │  conexión a la base de datos (driver, URL, credenciales).  │
+│                     │  Provee métodos openConnection() y closeConnection().      │
+├─────────────────────┼────────────────────────────────────────────────────────────┤
+│  User (Model)       │  Modelo ActiveJDBC mapeado a la tabla 'users'.            │
+│                     │  Campos: id, name, password. Getters/setters tipados.      │
+├─────────────────────┼────────────────────────────────────────────────────────────┤
+│  Professor (Model)  │  Modelo ActiveJDBC mapeado a la tabla 'professors'.       │
+│                     │  Campos: id, dni, name, email, department, phone.          │
+│                     │  Incluye validaciones de presencia y formato de email.     │
+├─────────────────────┼────────────────────────────────────────────────────────────┤
+│  Plantillas         │  Vistas HTML renderizadas del lado del servidor.           │
+│  Mustache           │  Reciben un modelo (Map) y generan HTML dinámico.          │
+├─────────────────────┼────────────────────────────────────────────────────────────┤
+│  Archivos Estáticos │  CSS y JavaScript servidos por Spark desde /static.        │
+│                     │  Definen estilos y comportamiento del lado del cliente.    │
+├─────────────────────┼────────────────────────────────────────────────────────────┤
+│  BCrypt             │  Biblioteca para hasheo seguro de contraseñas. Se usa al   │
+│                     │  registrar usuarios y verificar credenciales en el login.  │
+├─────────────────────┼────────────────────────────────────────────────────────────┤
+│  Jackson            │  Serialización/deserialización JSON para endpoints de      │
+│  ObjectMapper       │  tipo API (ej. /add_users).                               │
+└─────────────────────┴────────────────────────────────────────────────────────────┘
+```
+
+### 7.4 Flujo de una Solicitud HTTP
+
+```
+  Cliente                Spark          Filtro         Ruta          Modelo        SQLite       Mustache       Filtro
+ (Navegador)           Framework       before        (Handler)    (ActiveJDBC)      DB          Engine         after
+     │                    │              │              │              │             │             │              │
+     │  HTTP Request      │              │              │              │             │             │              │
+     │ ──────────────────▶│              │              │              │             │             │              │
+     │                    │  ejecutar    │              │              │             │             │              │
+     │                    │─────────────▶│              │              │             │             │              │
+     │                    │              │ Base.open()  │              │             │             │              │
+     │                    │              │─────────────────────────────────────────▶│             │              │
+     │                    │              │              │              │  conexión   │             │              │
+     │                    │              │◀─────────────────────────────────────────│             │              │
+     │                    │  delegar     │              │              │             │             │              │
+     │                    │────────────────────────────▶│              │             │             │              │
+     │                    │              │              │  consultar   │             │             │              │
+     │                    │              │              │─────────────▶│             │             │              │
+     │                    │              │              │              │  SQL query  │             │              │
+     │                    │              │              │              │────────────▶│             │              │
+     │                    │              │              │              │  resultado  │             │              │
+     │                    │              │              │              │◀────────────│             │              │
+     │                    │              │              │  objetos     │             │             │              │
+     │                    │              │              │◀─────────────│             │             │              │
+     │                    │              │              │  ModelAndView│             │             │              │
+     │                    │              │              │──────────────────────────────────────── ▶│              │
+     │                    │              │              │              │             │  HTML       │              │
+     │  HTML renderizado  │              │              │              │             │  render     │              │
+     │◀─────────────────────────────────────────────────────────────────────────────│             │              │
+     │                    │  ejecutar    │              │              │             │             │              │
+     │                    │──────────────────────────────────────────────────────────────────────▶│              │
+     │                    │              │              │              │             │             │ Base.close() │
+     │                    │              │              │              │             │◀────────────────────────── │
+     │                    │              │              │              │             │             │              │
+```
+
+---
+
+## 8. Diagrama de Diseño
+
+### 8.1 Diagrama de Clases
+
+```
+┌─────────────────────────────────────────────┐
+│                   App                        │
+├─────────────────────────────────────────────┤
+│ - objectMapper : ObjectMapper  [static]      │
+├─────────────────────────────────────────────┤
+│ + main(args: String[]) : void  [static]      │
+└──────────┬──────────┬───────────┬───────────┘
+           │          │           │
+           │ usa      │ crea/     │ renderiza
+           │          │ consulta  │
+           ▼          │           ▼
+┌─────────────────────────────┐  ┌──────────────────────────┐
+│     DBConfigSingleton       │  │  MustacheTemplateEngine   │
+├─────────────────────────────┤  ├──────────────────────────┤
+│ - instance : DBConfig       │  │                          │
+│   [static]                  │  ├──────────────────────────┤
+│ - dbUrl    : String         │  │ + render(mv) : String    │
+│ - user     : String         │  └──────────────────────────┘
+│ - pass     : String         │
+│ - driver   : String         │  ┌──────────────────────────┐
+├─────────────────────────────┤  │      ModelAndView         │
+│ - DBConfigSingleton()       │  ├──────────────────────────┤
+│ + getInstance() : DBConfig  │  │ - model    : Object      │
+│   [static]                  │  │ - viewName : String       │
+│ + openConnection()  : void  │  ├──────────────────────────┤
+│ + closeConnection() : void  │  │ + ModelAndView(model,    │
+│ + getDbUrl()  : String      │  │        viewName)          │
+│ + getUser()   : String      │  └──────────────────────────┘
+│ + getPass()   : String      │
+│ + getDriver() : String      │
+└──────────────┬──────────────┘
+               │ configura conexión
+               ▼
+┌─────────────────────────────────────────────┐
+│           Model  <<ActiveJDBC>>              │
+├─────────────────────────────────────────────┤
+│ + set(attr, value) : Model                   │
+│ + getString(attr)  : String                  │
+│ + getInteger(attr) : Integer                 │
+│ + getId()          : Object                  │
+│ + saveIt()         : boolean                 │
+│ + findFirst(query, params) : Model  [static] │
+│ + findAll()  : LazyList             [static] │
+│ + count()    : Long                 [static] │
+└──────────┬──────────────────────┬───────────┘
+           │                      │
+           │  hereda              │  hereda
+           ▼                      ▼
+┌──────────────────────┐  ┌─────────────────────────────┐
+│       User           │  │         Professor            │
+├──────────────────────┤  ├─────────────────────────────┤
+│ Tabla: users         │  │ Tabla: professors            │
+├──────────────────────┤  ├─────────────────────────────┤
+│ + getName() : String │  │ Validaciones:                │
+│ + setName(name)      │  │  - email : presencia+formato │
+│ + getPassword()      │  │  - name  : presencia         │
+│ + setPassword(pass)  │  │  - DNI   : presencia         │
+└──────────────────────┘  └─────────────────────────────┘
+         ▲                          ▲
+         │  crea/consulta           │  crea/consulta
+         │                          │
+         └────────────┬─────────────┘
+                      │
+                ┌─────┴─────┐
+                │   App     │
+                └───────────┘
+```
+
+### 8.2 Diagrama de Paquetes
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                       com.is1.proyecto                              │
+│                                                                     │
+│   ┌───────────────────────────────────────┐                        │
+│   │             App.java                   │                        │
+│   │       (Controlador Principal)          │                        │
+│   └─────────┬─────────────┬───────────────┘                        │
+│             │             │                                         │
+│             ▼             ▼                                         │
+│   ┌─────────────────┐  ┌──────────────────────┐                   │
+│   │   config/        │  │     models/           │                   │
+│   │                 │  │                      │                   │
+│   │ DBConfigSingle- │  │  User.java           │                   │
+│   │  ton.java       │  │  Professor.java      │                   │
+│   └─────────────────┘  └──────────────────────┘                   │
+└─────────────────────────────────────────────────────────────────────┘
+                      │
+                      ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                         resources/                                   │
+│                                                                     │
+│   ┌──────────────────────────┐    ┌──────────────────────────┐     │
+│   │      templates/           │    │       static/             │     │
+│   │                          │    │                          │     │
+│   │  login.mustache          │    │  css/                    │     │
+│   │  dashboard.mustache      │    │    login-style.css       │     │
+│   │  professor_form.mustache │    │  js/                     │     │
+│   │  professor_list.mustache │    │    login-script.js       │     │
+│   │  user_form.mustache      │    │  images/                 │     │
+│   │  error.mustache          │    │                          │     │
+│   └──────────────────────────┘    └──────────────────────────┘     │
+│                                                                     │
+│   database.properties                                               │
+│   scheme.sql                                                        │
+└─────────────────────────────────────────────────────────────────────┘
+                      │
+                      ▼
+                ┌───────────┐
+                │    db/     │
+                │  dev.db    │
+                └───────────┘
+```
+
+### 8.3 Mapa de Rutas del Sistema
+
+```
+┌─────────┬──────────────────┬───────────────┬─────────────────────────────────┬───────────────────────────────┐
+│ Método  │ Ruta             │ Autenticación │ Descripción                     │ Vista                         │
+├─────────┼──────────────────┼───────────────┼─────────────────────────────────┼───────────────────────────────┤
+│ GET     │ /                │ No            │ Formulario de inicio de sesión  │ login.mustache                │
+│ POST    │ /login           │ No            │ Procesa credenciales de login   │ login / dashboard.mustache    │
+│ GET     │ /logout          │ Sí            │ Cierra sesión del usuario       │ Redirige a /                  │
+│ GET     │ /dashboard       │ Sí            │ Panel de control del usuario    │ dashboard.mustache            │
+│ GET     │ /user/create     │ No            │ Formulario de creación de cuenta│ user_form.mustache            │
+│ GET     │ /user/new        │ No            │ Alias del formulario de creación│ user_form.mustache            │
+│ POST    │ /user/new        │ No            │ Registra nuevo usuario (BCrypt) │ Redirige a /user/create       │
+│ POST    │ /add_users       │ No            │ API JSON para agregar usuarios  │ Respuesta JSON                │
+│ GET     │ /professor/new   │ Sí            │ Formulario para agregar profesor│ professor_form.mustache       │
+│ POST    │ /professor/new   │ Sí            │ Registra nuevo profesor en DB   │ Redirige a /professor/new     │
+│ GET     │ /professor/list  │ No            │ Lista paginada de profesores    │ professor_list.mustache        │
+└─────────┴──────────────────┴───────────────┴─────────────────────────────────┴───────────────────────────────┘
+```
+
+### 8.4 Esquema de Base de Datos
+
+```
+┌────────────────────────────────────────────┐
+│                  USERS                      │
+├──────────────┬─────────┬───────────────────┤
+│ Columna      │ Tipo    │ Restricciones     │
+├──────────────┼─────────┼───────────────────┤
+│ id           │ INTEGER │ PK, AUTOINCREMENT │
+│ name         │ TEXT    │ NOT NULL, UNIQUE  │
+│ password     │ TEXT    │ NOT NULL (BCrypt) │
+└──────────────┴─────────┴───────────────────┘
+
+┌────────────────────────────────────────────────────────┐
+│                     PROFESSORS                          │
+├──────────────┬───────────┬─────────────────────────────┤
+│ Columna      │ Tipo      │ Restricciones               │
+├──────────────┼───────────┼─────────────────────────────┤
+│ id           │ INTEGER   │ PK, AUTOINCREMENT           │
+│ dni          │ INTEGER   │ UNIQUE, NOT NULL            │
+│ name         │ TEXT      │ NOT NULL                    │
+│ email        │ TEXT      │ UNIQUE                      │
+│ department   │ TEXT      │                             │
+│ phone        │ TEXT      │                             │
+│ created_at   │ TIMESTAMP │ DEFAULT CURRENT_TIMESTAMP   │
+│ updated_at   │ TIMESTAMP │ DEFAULT CURRENT_TIMESTAMP   │
+└──────────────┴───────────┴─────────────────────────────┘
+```
+
+### 8.5 Patrones de Diseño Utilizados
+
+```
+┌─────────────────────┬────────────────────────────────────────────────────────────┐
+│ Patrón              │ Aplicación en el Sistema                                   │
+├─────────────────────┼────────────────────────────────────────────────────────────┤
+│ Singleton           │ DBConfigSingleton: garantiza una única instancia de        │
+│                     │ configuración de base de datos en toda la aplicación.      │
+├─────────────────────┼────────────────────────────────────────────────────────────┤
+│ MVC (Model-View-    │ Modelo: clases User y Professor (ActiveJDBC).             │
+│  Controller)        │ Vista: plantillas Mustache.                               │
+│                     │ Controlador: rutas definidas en App.java.                 │
+├─────────────────────┼────────────────────────────────────────────────────────────┤
+│ Template Engine     │ Mustache separa la lógica de presentación (HTML) de la    │
+│                     │ lógica del servidor (Java).                               │
+├─────────────────────┼────────────────────────────────────────────────────────────┤
+│ Filter/Interceptor  │ Filtros before y after de Spark para gestión transversal  │
+│                     │ de conexiones a la base de datos.                         │
+├─────────────────────┼────────────────────────────────────────────────────────────┤
+│ ORM (ActiveRecord)  │ ActiveJDBC implementa el patrón Active Record: cada       │
+│                     │ modelo representa una fila y encapsula el acceso a datos. │
+└─────────────────────┴────────────────────────────────────────────────────────────┘
+```
