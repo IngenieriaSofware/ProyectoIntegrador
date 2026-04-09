@@ -73,3 +73,35 @@ sequenceDiagram
 | Técnico | La autenticación basada en sesiones de Spark Java no incluye protección contra CSRF ni uso de HTTPS en desarrollo, lo que representa una vulnerabilidad de seguridad crítica dado que el sistema maneja credenciales y datos académicos sensibles (identificado en App.java falta de filtros de seguridad como CSRF tokens o configuración de SSL) | Alta | Alta | Identificado por Claude Code durante análisis de App.java |
 | Organizacional | El uso de Mustache para plantillas requiere que la lógica de presentación se mantenga en Java (como se ve en la paginación), lo que viola la separación de preocupaciones y aumenta la carga cognitiva para desarrolladores que deben trabajar simultáneamente en lógica de negocio y presentación (identificado en App.java líneas 430-452 donde se construyen objetos de paginación en Java para consumo en Mustache) | Media | Media | Identificado por Claude Code durante análisis de App.java |
 | Planificación | No hay evidencia de estrategias de pruebas integradas más allá de un test unitario triviale (AppTest.java), lo que es riesgoso dada la complejidad del motor de reglas requerido para validaciones de correlatividades y cupos (identificado en src/test/java/com/is1/proyecto/AppTest.java que solo contiene un test que siempre pasa y requirements.md sección 3 que describe funcionalidades complejas sin evidencia de plan de testing) | Alta | Alta | Identificado por Claude Code durante análisis de estructura de test y requirements.md |
+
+---
+
+## 4. Matriz de Riesgos Detectados por el Equipo
+
+| Tipo de Riesgo | Descripción | Probabilidad | Impacto | Identificado por |
+|----------------|-------------|--------------|---------|------------------|
+| Técnico | **Inconsistencia de Entornos:** Debido al uso de distintos sistemas operativos (Windows/Linux) entre los integrantes, existe el riesgo de errores en rutas de archivos y ejecución de dependencias al integrar módulos. | Alta | Media | Equipo |
+| Organizacional | **Fragmentación de la comunicación:** La falta de coincidencia en horarios laborales y académicos genera un flujo de información asincrónico, dificultando la toma de decisiones rápidas y la consistencia entre módulos. | Alta | Media | Equipo |
+| Planificación | **Superposición de calendario académico:** Las fechas críticas de desarrollo coinciden con exámenes parciales de otras materias, poniendo en riesgo el cumplimiento de hitos finales del proyecto integrador. | Alta | Crítico | Equipo |
+| Humano | **Brecha de conocimientos específicos:** El equipo presenta niveles desiguales de experiencia con las herramientas solicitadas y la lógica algorítmica de correlatividades, requiriendo tiempo extra de capacitación. | Media | Baja | Equipo |
+
+---
+
+## 5. Comparación de Análisis: IA vs. Equipo
+
+### Riesgos que encontró la IA y el equipo no:
+La IA realizó un análisis técnico exhaustivo que detectó vulnerabilidades críticas en el código, como la carga de datos ineficiente en memoria en [App.java](App.java) y la ausencia de protecciones de seguridad como tokens CSRF o HTTPS. También identificó dependencias tecnológicas poco comunes en el [pom.xml](pom.xml) que podrían dificultar el mantenimiento futuro.
+
+### Riesgos que encontró el equipo y la IA no:
+El equipo identificó problemas logísticos y contextuales que la IA ignora por completo. Esto incluye la falta de tiempo real por obligaciones laborales y académicas, la dificultad de coordinar a 6 personas con horarios distintos y los problemas técnicos de compatibilidad entre Windows y Linux que surgen en el día a día.
+
+### Calidad del análisis:
+
+* **Análisis de la IA:** Es de nivel "exquisito" en cuanto a la lógica de programación, logrando vincular problemas directamente con líneas específicas de archivos como [App.java](App.java) y [requirements.md](requirements.md).
+  * **Análisis del Equipo:** Es un análisis de gestión de recursos humanos y viabilidad. Como novatos, el equipo aporta la visión de las barreras de aprendizaje y la ejecución real del proyecto que el código no refleja.
+
+---
+
+## 6. Conclusión sobre la Calidad del Análisis
+
+La IA funciona como un **auditor técnico senior** que previene fallos de rendimiento y seguridad, mientras que el equipo actúa como el **gestor de proyectos** que entiende las limitaciones físicas y de tiempo. Ambos análisis son complementarios: la IA asegura que el sistema sea sólido y el equipo asegura que el proyecto realmente se pueda terminar.
