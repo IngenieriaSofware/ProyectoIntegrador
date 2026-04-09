@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard - Bienvenido</title>
+    
+    <link rel="stylesheet" href="/css/login-style.css" />
+    
+    <link rel="stylesheet" href="https://unicons.iconscout.com/release/v4.0.0/css/line.css" />
+</head>
+<body>
+
+    <section class="home">
+    
+        <div class="form_container form_container--dashboard">
+            <div class="form login_form"> <h2>Panel de Control</h2>
+                
+                {{#username}}
+                <p class="welcome-message">¡Bienvenido, <span>{{username}}</span>!</p>
+                {{/username}}
+                {{^username}}
+                <p class="welcome-message">¡Bienvenido!</p>
+                {{/username}}
+
+                <div class="dashboard-grid">
+                    
+                    <div class="dashboard-card">
+                        <h2>Cargar Profesor</h2>
+                        <p>Agregar un nuevo profesor al sistema.</p>
+                        <a href="/professor/new">Agregar</a>
+                    </div>
+                    
+                    <div class="dashboard-card">
+                        <h2>Ver Profesores</h2>
+                        <p>Listar todos los profesores registrados.</p>
+                        <a href="/professor/list">Listar</a>
+                    </div>
+
+                    <div class="dashboard-card">
+                        <h2>Tu Perfil</h2>
+                        <p>Gestiona la información de tu cuenta.</p>
+                        <a href="/profile">Ver Perfil</a>
+                    </div>
+                    
+                    <div class="dashboard-card">
+                        <h2>Configuraciones</h2>
+                        <p>Ajusta las preferencias de tu aplicación.</p>
+                        <a href="/settings">Configuración</a>
+                    </div>
+                    
+                </div>
+
+                <div class="logout-container">
+                    <a href="/logout" class="button-logout">Cerrar Sesión</a>
+                </div>
+            </div>
+        </div>
+    </section>
+</body>
+</html>

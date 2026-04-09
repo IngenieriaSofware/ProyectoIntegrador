@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Agregar Profesor</title>
+    
+    <link rel="stylesheet" href="/css/login-style.css" />
+    <link rel="stylesheet" href="https://unicons.iconscout.com/release/v4.0.0/css/line.css" />
+</head>
+<body>
+
+    <section class="home">
+    
+        <div class="form_container">
+            <div class="form login_form">
+            
+                {{#successMessage}}
+                <div class="alert alert-success" role="alert">
+                    {{successMessage}}
+                </div>
+                {{/successMessage}}
+        
+                {{#errorMessage}}
+                <div class="alert alert-danger" role="alert">
+                    {{errorMessage}}
+                </div>
+                {{/errorMessage}}
+
+                <form action="/professor/new" method="post" id="professor-form">
+                    <h2>Agregar Profesor</h2>
+
+                    <div class="input_box">
+                        <input type="text" name="name" placeholder="Nombre" required />
+                        <i class="uil uil-user email"></i>
+                    </div>
+
+                    <div class="input_box">
+                        <input 
+                            type="text" 
+                            name="DNI" 
+                            placeholder="DNI" 
+                            required
+                            inputmode="numeric"
+                            pattern="[0-9]*"
+                            oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+                        />
+                        <i class="uil uil-file-alt email"></i>
+                    </div>
+
+                    <div class="input_box">
+                        <input 
+                            type="email" 
+                            id="email-input"
+                            name="email" 
+                            placeholder="Email" 
+                            required 
+                            pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+                            title="Ingresa un email válido (ej: nombre@dominio.com)"
+                        />
+                        <i class="uil uil-envelope-alt email"></i>
+                    </div>
+                    <small id="email-error" class="input-error-message"></small>
+
+                    <div class="input_box">
+                        <input type="text" name="department" placeholder="Departamento" />
+                        <i class="uil uil-building email"></i>
+                    </div>
+                    
+                    <div class="input_box">
+                        <input type="text" name="phone" placeholder="Teléfono" />
+                        <i class="uil uil-phone email"></i>
+                    </div>
+                    
+                    <button type="submit" class="button">
+                        Guardar
+                    </button>
+                    
+                    <div class="login_signup">
+                        <a href="/dashboard">Cancelar</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            
+            const emailInput = document.getElementById("email-input");
+            const emailError = document.getElementById("email-error");
+            const form = document.getElementById("professor-form");
+
+            function validarEmail() {
+                const email = emailInput.value;
+
+                if (email.length === 0) {
+                    emailError.textContent = "";
+                    return false; // Inválido porque es 'required'
+                }
+
+                const atIndex = email.lastIndexOf('@');
+                const dotIndex = email.lastIndexOf('.');
+
+                if (atIndex === -1) {
+                    emailError.textContent = "Debe incluir un '@'.";
+                    return false;
+                }
+                if (dotIndex === -1 || dotIndex < atIndex) {
+                    emailError.textContent = "Debe incluir un '.' después del '@'.";
+                    return false;
+                }
+
+                if ((email.length - (dotIndex + 1)) < 2) {
+                    emailError.textContent = "El dominio debe tener al menos 2 letras (ej: .com, .ar)";
+                    return false;
+                }
+                
+                emailError.textContent = "";
+                return true;
+            }
+
+            // A. Validar cuando el usuario SALE del campo
+            emailInput.addEventListener("blur", validarEmail);
+
+            // B. Validar ANTES de enviar el formulario
+            form.addEventListener("submit", function(event) {
+                
+                const isEmailValid = validarEmail(); 
+
+                if (!isEmailValid) {
+                    // ¡DETIENE EL ENVÍO!
+                    event.preventDefault(); 
+                    
+                    if (emailInput.value.length === 0) {
+                         emailError.textContent = "Este campo es obligatorio.";
+                    } else {
+                        // Muestra el error de formato si no estaba visible
+                        validarEmail();
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>

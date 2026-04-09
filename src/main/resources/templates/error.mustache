@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Error</title>
+    
+    <link rel="stylesheet" href="/css/login-style.css" />
+    
+    <link rel="stylesheet" href="https://unicons.iconscout.com/release/v4.0.0/css/line.css" />
+</head>
+<body>
+
+    <section class="home">
+    
+        <div class="form_container">
+            <div class="form login_form"> <i class="uil uil-exclamation-triangle error-icon"></i>
+            
+                <h2>¡Oops! Ha ocurrido un error.</h2>
+
+                {{#errorMessage}}
+                    <p class="error-text">{{errorMessage}}</p>
+                {{/errorMessage}}
+                {{^errorMessage}}
+                    <p class="error-text">
+                        Lo sentimos, algo salió mal. Por favor, inténtalo de nuevo más tarde.
+                    </p>
+                {{/errorMessage}}
+                
+                <div class="login_signup">
+                    <a href="javascript:history.back()">Volver a la página principal</a>
+                </div>
+
+            </div>
+        </div>
+    </section>
+</body>
+</html>

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Lista de Profesores</title>
+    
+    <link rel="stylesheet" href="/css/login-style.css" />
+</head>
+<body>
+
+    <section class="home">
+        <div class="form_container form_container--wide">
+            <div class="form login_form">
+                <h2>Lista de Profesores</h2>
+
+                <table class="styled-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nombre</th>
+                            <th>Email</th>
+                            <th>Departamento</th>
+                            <th>Teléfono</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{#professors}}
+                            <tr>
+                                <td>{{id}}</td>
+                                <td>{{name}}</td>
+                                <td>{{email}}</td>
+                                <td>{{department}}</td>
+                                <td>{{phone}}</td>
+                            </tr>
+                        {{/professors}}
+                    </tbody>
+                </table>
+
+                {{^professors}}
+                    <p class="empty-list-message">
+                        No hay profesores registrados todavía.
+                    </p>
+                {{/professors}}
+
+                <div class="button-container">
+                    <a href="/dashboard" class="button-secondary">
+                        Volver al Panel
+                    </a>
+                    <a href="/professor/new" class="button-primary">
+                        Agregar Profesor
+                    </a>
+                </div>
+
+                <div class="pagination">
+                    <a href="/professor/list?page={{previousPage}}" 
+                       class="{{^hasPrevious}}disabled{{/hasPrevious}}">
+                       &laquo; Anterior
+                    </a>
+
+                    {{#pages}}
+                        <a href="/professor/list?page={{number}}" 
+                           class="{{#isCurrent}}active{{/isCurrent}}">
+                           {{number}}
+                        </a>
+                    {{/pages}}
+
+                    <a href="/professor/list?page={{nextPage}}" 
+                       class="{{^hasNext}}disabled{{/hasNext}}">
+                       Siguiente &raquo;
+                    </a>
+                </div>
+                </div>
+        </div>
+    </section>
+</body>
+</html>

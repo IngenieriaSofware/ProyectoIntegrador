@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Crear una cuenta</title>
+    
+    <link rel="stylesheet" href="/css/login-style.css" />
+    
+    <link rel="stylesheet" href="https://unicons.iconscout.com/release/v4.0.0/css/line.css" />
+</head>
+<body>
+
+    <section class="home">
+    
+        <div class="form_container">
+            <div class="form login_form">
+            
+                {{#successMessage}}
+                <div class="alert alert-success" role="alert">
+                    {{successMessage}}
+                </div>
+                {{/successMessage}}
+        
+                {{#errorMessage}}
+                <div class="alert alert-danger" role="alert">
+                    {{errorMessage}}
+                </div>
+                {{/errorMessage}}
+
+                <form action="/user/new" method="post">
+                    <h2>Crear una cuenta</h2>
+                    
+                    <div class="input_box">
+                        <input type="text" id="name" name="name" placeholder="Ingresa tu nombre de usuario" required />
+                        <i class="uil uil-user email"></i>
+                    </div>
+                    
+                    <div class="input_box">
+                        <input type="password" id="password" name="password" placeholder="Crea una contraseña" required />
+                        <i class="uil uil-lock password"></i>
+                        <i class="uil uil-eye-slash pw_hide"></i>
+                    </div>
+                    
+                    <button type="submit" class="button">
+                        Registrar Usuario
+                    </button>
+                    
+                    <div class="login_signup">
+                        ¿Ya tienes una cuenta? 
+                        <a href="/">Volver al inicio</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <script src="/js/login-script.js"></script>
+</body>
+</html>
