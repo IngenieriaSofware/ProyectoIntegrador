@@ -1,4 +1,4 @@
-# Documentación: Sistema de Gestión Estudiantil (Integrador)
+# Proyecto Integrador: Sistema de Gestión Estudiantil (UNRC)
 
 ## 1. Problema que se quiere resolver
 
@@ -18,15 +18,39 @@ Se han identificado tres actores principales con permisos diferenciados:
 
 ---
 
-## 3. Funcionalidades Principales
+## 3. Funcionalidades Detalladas (Desglose por Módulos)
 
-El sistema integra las siguientes capacidades clave según el backlog inicial:
+Para cumplir con los objetivos de centralización y automatización, el sistema se divide en los siguientes alcances específicos:
 
-- **Gestión de Legajos:** Registro y actualización de datos personales y académicos de alumnos y docentes.
-- **Administración Académica:** Configuración de planes de estudio, carreras y reglas de correlatividad.
-- **Inscripciones y Validaciones:** Control automático de requisitos (correlativas aprobadas) para cursar o rendir materias.
-- **Gestión de Cátedras:** Asignación flexible de roles para el equipo docente (Titular, JTP, Ayudante) por período.
-- **Seguimiento Académico:** Visualización del progreso del alumno, detección de riesgos y generación de reportes o actas.
+### A. Módulo de Gestión de Usuarios y Seguridad
+
+- **Autenticación y Perfiles:** Sistema de login con cifrado de credenciales y redirección basada en roles (Admin, Estudiante, Docente).
+- **Administración de Legajos:** CRUD completo de Estudiantes y Profesores, incluyendo validación de formatos de DNI, Email y Teléfono.
+- **Gestión de Sesiones:** Control de acceso para asegurar que cada actor solo visualice y edite los datos permitidos por su rol.
+
+### B. Módulo Académico (Configuración)
+
+- **Gestión de Oferta Académica:** Definición de Carreras y sus respectivos Planes de Estudio por año de vigencia.
+- **Grafo de Correlatividades:** Carga de requisitos de pre-requisito (materia anterior) y posterior, distinguiendo entre condición de "Regular" o "Aprobada" para habilitar la siguiente.
+- **Administración de Comisiones:** Creación de espacios de cursada vinculando materias con horarios y aulas (físicas o virtuales).
+
+### C. Módulo de Inscripciones y Motor de Reglas
+
+- **Inscripción a Cursadas:** Validación en tiempo real del cumplimiento de correlativas regulares antes de confirmar el alta en una comisión.
+- **Inscripción a Exámenes Finales:** Validación automática de la condición de "Regular" en la materia y correlativas aprobadas según el plan.
+- **Gestión de Cupos:** Control de capacidad máxima por comisión para evitar la sobrepoblación de las aulas.
+
+### D. Módulo de Gestión Docente y Calificaciones
+
+- **Asignación de Roles de Cátedra:** Vinculación de uno o más docentes a una materia con cargos específicos (Titular, JTP, Ayudante) por período lectivo.
+- **Carga de Notas y Actas:** Interfaz para que el docente registre calificaciones de parciales, trabajos prácticos y exámenes finales.
+- **Cierre de Condición:** Proceso automático/manual para determinar si un alumno queda en condición de "Libre", "Regular" o "Promocionado".
+
+### E. Módulo de Seguimiento y Valor Agregado (Propuesta del Equipo)
+
+- **Dashboard de Progreso Estudiantil:** Visualización gráfica para el alumno sobre su avance porcentual en la carrera.
+- **Sistema de Alertas Tempranas:** Notificación automática a la Oficina de Alumnos sobre estudiantes con más de dos aplazos consecutivos o inactividad prolongada.
+- **Exportación Documental:** Generación de archivos PDF para listas de inscriptos, actas de examen y certificados analíticos parciales.
 
 ---
 
@@ -34,11 +58,11 @@ El sistema integra las siguientes capacidades clave según el backlog inicial:
 
 Para asegurar la calidad del software, el sistema debe cumplir con:
 
-- **Seguridad:** Protección de datos sensibles y control de acceso por roles.
-- **Mantenibilidad:** Arquitectura modular que facilite actualizaciones.
-- **Escalabilidad:** Capacidad para soportar el crecimiento en la cantidad de alumnos y carreras.
-- **Performance:** Procesamiento rápido de inscripciones masivas.
-- **Usabilidad:** Interfaz intuitiva y clara para facilitar la experiencia del usuario.
+- **Seguridad:** Protección de datos almacenados y control de acceso por roles para evitar manipulaciones indebidas.
+- **Mantenibilidad:** Arquitectura modular y extensible que facilite la incorporación de nuevas funciones.
+- **Escalabilidad:** Capacidad para soportar un mayor número de carreras, planes y alumnos sin perder rendimiento.
+- **Performance:** Procesamiento rápido de inscripciones y validaciones masivas.
+- **Usabilidad:** Interfaz clara e intuitiva que facilite la experiencia del usuario.
 
 ---
 
@@ -46,21 +70,22 @@ Para asegurar la calidad del software, el sistema debe cumplir con:
 
 ### Tamaño del Equipo
 
-- El equipo está conformado por **6 integrantes**: Cruseño Alvaro, Dehaes Juan, Destefanis Adrian, Dominguez Alan, Garais Santiago y Narvaja Samuel.
+El equipo está conformado por 6 integrantes: Cruseño Alvaro, Dehaes Juan, Destefanis Adrian, Dominguez Alan, Garais Santiago y Narvaja Samuel.
 
 ### Tecnologías Elegidas y Justificación
 
 - **Java:** Lenguaje principal por su robustez y soporte de Programación Orientada a Objetos.
-- **Spark:** Framework ligero para el manejo de rutas y peticiones web.
-- **SQLite:** Motor de base de datos relacional que facilita la portabilidad del proyecto.
-- **Mustache:** Sistema de plantillas para renderizar las vistas de forma dinámica.
-- **JDBC:** Para una gestión directa y eficiente de las consultas SQL.
+- **Spark Java:** Framework web ligero para la gestión de rutas y peticiones.
+- **SQLite / ActiveJDBC:** Motor de base de datos relacional y ORM para facilitar la portabilidad y gestión eficiente de consultas SQL.
+- **Mustache:** Sistema de plantillas para el renderizado dinámico de vistas.
+
+---
 
 ## 6. Seguimiento y Organización
 
 ### Plazo estimado
 
-El proyecto se desarrolla según el calendario de Ingeniería de Software II..
+El proyecto se desarrolla según el calendario de Ingeniería de Software II 2026.
 
 ### Cambios de alcance ocurridos
 
@@ -68,11 +93,13 @@ No se registran cambios; el alcance se mantiene fiel a los requerimientos de la 
 
 ### Problemas encontrados
 
-El desafío principal fue modelar en UML la lógica de correlatividades y la asignación de múltiples roles docentes por período.
+1. Complejidad en el modelado UML de la recursividad para las correlatividades de materias.
+2. Definición de la clase asociativa "Periodo" para gestionar múltiples roles docentes por cátedra sin conflictos.
+3. Estandarización del entorno de desarrollo (archivo dev.db) para evitar inconsistencias entre los 6 miembros del equipo.
 
 ### Forma de organización del equipo
 
-Para este práctico integrador, el equipo de 6 integrantes distribuyó las responsabilidades asignando tres responsables por cada ejercicio solicitado alternandolo.
+Para este proyecto, el equipo distribuyó las responsabilidades mediante el uso de GitHub Projects, asignando responsables por cada módulo funcional y realizando revisiones de código (Code Reviews) para asegurar la calidad del desarrollo.
 
 ---
 
@@ -198,60 +225,17 @@ El sistema sigue una arquitectura **Cliente-Servidor en tres capas** (Presentaci
 │                     │  Provee métodos openConnection() y closeConnection().      │
 ├─────────────────────┼────────────────────────────────────────────────────────────┤
 │  User (Model)       │  Modelo ActiveJDBC mapeado a la tabla 'users'.            │
-│                     │  Campos: id, name, password. Getters/setters tipados.      │
+│                     │  Encapsula la lógica de gestión de usuarios.              │
+│                     │  Contiene validaciones de credenciales (BCrypt).          │
 ├─────────────────────┼────────────────────────────────────────────────────────────┤
 │  Professor (Model)  │  Modelo ActiveJDBC mapeado a la tabla 'professors'.       │
-│                     │  Campos: id, dni, name, email, department, phone.          │
-│                     │  Incluye validaciones de presencia y formato de email.     │
+│                     │  Encapsula la gestión de datos de profesores.             │
+│                     │  Valida formatos (email, DNI, teléfono).                  │
 ├─────────────────────┼────────────────────────────────────────────────────────────┤
-│  Plantillas         │  Vistas HTML renderizadas del lado del servidor.           │
-│  Mustache           │  Reciben un modelo (Map) y generan HTML dinámico.          │
-├─────────────────────┼────────────────────────────────────────────────────────────┤
-│  Archivos Estáticos │  CSS y JavaScript servidos por Spark desde /static.        │
-│                     │  Definen estilos y comportamiento del lado del cliente.    │
-├─────────────────────┼────────────────────────────────────────────────────────────┤
-│  BCrypt             │  Biblioteca para hasheo seguro de contraseñas. Se usa al   │
-│                     │  registrar usuarios y verificar credenciales en el login.  │
-├─────────────────────┼────────────────────────────────────────────────────────────┤
-│  Jackson            │  Serialización/deserialización JSON para endpoints de      │
-│  ObjectMapper       │  tipo API (ej. /add_users).                               │
+│  Mustache          │  Motor de plantillas que renderiza vistas dinámicas        │
+│                     │  (login.mustache, dashboard.mustache, etc.).              │
+│                     │  Recibe objetos del modelo y genera HTML.                 │
 └─────────────────────┴────────────────────────────────────────────────────────────┘
-```
-
-### 7.4 Flujo de una Solicitud HTTP
-
-```
-  Cliente                Spark          Filtro         Ruta          Modelo        SQLite       Mustache       Filtro
- (Navegador)           Framework       before        (Handler)    (ActiveJDBC)      DB          Engine         after
-     │                    │              │              │              │             │             │              │
-     │  HTTP Request      │              │              │              │             │             │              │
-     │ ──────────────────▶│              │              │              │             │             │              │
-     │                    │  ejecutar    │              │              │             │             │              │
-     │                    │─────────────▶│              │              │             │             │              │
-     │                    │              │ Base.open()  │              │             │             │              │
-     │                    │              │─────────────────────────────────────────▶│             │              │
-     │                    │              │              │              │  conexión   │             │              │
-     │                    │              │◀─────────────────────────────────────────│             │              │
-     │                    │  delegar     │              │              │             │             │              │
-     │                    │────────────────────────────▶│              │             │             │              │
-     │                    │              │              │  consultar   │             │             │              │
-     │                    │              │              │─────────────▶│             │             │              │
-     │                    │              │              │              │  SQL query  │             │              │
-     │                    │              │              │              │────────────▶│             │              │
-     │                    │              │              │              │  resultado  │             │              │
-     │                    │              │              │              │◀────────────│             │              │
-     │                    │              │              │  objetos     │             │             │              │
-     │                    │              │              │◀─────────────│             │             │              │
-     │                    │              │              │  ModelAndView│             │             │              │
-     │                    │              │              │──────────────────────────────────────── ▶│              │
-     │                    │              │              │              │             │  HTML       │              │
-     │  HTML renderizado  │              │              │              │             │  render     │              │
-     │◀─────────────────────────────────────────────────────────────────────────────│             │              │
-     │                    │  ejecutar    │              │              │             │             │              │
-     │                    │──────────────────────────────────────────────────────────────────────▶│              │
-     │                    │              │              │              │             │             │ Base.close() │
-     │                    │              │              │              │             │◀────────────────────────── │
-     │                    │              │              │              │             │             │              │
 ```
 
 ---
