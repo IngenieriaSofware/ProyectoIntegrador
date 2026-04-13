@@ -15,10 +15,10 @@ sequenceDiagram
     participant CC as Claude Code (Auditor LLM)
     participant DOC as Documentación Proyecto
 
-    Note over E, DOC: Fase 1: Preparación de Contexto
+    Note over E,DOC: Fase 1: Preparación de Contexto
     E->>DOC: Finalización de requirements.md (Módulos y Stack)
 
-    Note over E, CC: Fase 2: Auditoría de Riesgos con IA
+    Note over E,CC: Fase 2: Auditoría de Riesgos con IA
     E->>CC: Envío de prompt con contexto del proyecto y archivo requirements.md
 
     activate CC
@@ -28,14 +28,13 @@ sequenceDiagram
     CC-->>E: Generación de Matriz de Riesgos (Tabla Proba/Impacto)
     deactivate CC
 
-    Note over E, DOC: Fase 3: Análisis Manual y Comparación
+    Note over E,DOC: Fase 3: Análisis Manual y Comparación
     E->>E: Identificación manual de riesgos por el equipo
     E->>DOC: Registro de Tabla Comparativa: "IA vs. Equipo"
     E->>DOC: Conclusión sobre la calidad del análisis de la IA
 ```
 
 ---
-
 ## 2. Prompt Utilizado
 **Instrucción enviada a Claude Code:**
 

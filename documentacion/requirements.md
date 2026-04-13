@@ -32,13 +32,11 @@ Para cumplir con los objetivos de centralización y automatización, el sistema 
 
 - **Gestión de Oferta Académica:** Definición de Carreras y sus respectivos Planes de Estudio por año de vigencia.
 - **Grafo de Correlatividades:** Carga de requisitos de pre-requisito (materia anterior) y posterior, distinguiendo entre condición de "Regular" o "Aprobada" para habilitar la siguiente.
-- **Administración de Comisiones:** Creación de espacios de cursada vinculando materias con horarios y aulas (físicas o virtuales).
 
 ### C. Módulo de Inscripciones y Motor de Reglas
 
 - **Inscripción a Cursadas:** Validación en tiempo real del cumplimiento de correlativas regulares antes de confirmar el alta en una comisión.
 - **Inscripción a Exámenes Finales:** Validación automática de la condición de "Regular" en la materia y correlativas aprobadas según el plan.
-- **Gestión de Cupos:** Control de capacidad máxima por comisión para evitar la sobrepoblación de las aulas.
 
 ### D. Módulo de Gestión Docente y Calificaciones
 
@@ -49,7 +47,6 @@ Para cumplir con los objetivos de centralización y automatización, el sistema 
 ### E. Módulo de Seguimiento y Valor Agregado (Propuesta del Equipo)
 
 - **Dashboard de Progreso Estudiantil:** Visualización gráfica para el alumno sobre su avance porcentual en la carrera.
-- **Sistema de Alertas Tempranas:** Notificación automática a la Oficina de Alumnos sobre estudiantes con más de dos aplazos consecutivos o inactividad prolongada.
 - **Exportación Documental:** Generación de archivos PDF para listas de inscriptos, actas de examen y certificados analíticos parciales.
 
 ---
