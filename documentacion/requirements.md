@@ -427,7 +427,7 @@ El sistema sigue una arquitectura **Cliente-Servidor en tres capas** (Presentaci
 │ ORM (ActiveRecord)  │ ActiveJDBC implementa el patrón Active Record: cada       │
 │                     │ modelo representa una fila y encapsula el acceso a datos. │
 └─────────────────────┴────────────────────────────────────────────────────────────┘
-
+```
 ---
 
 ## 9. Estimación de Esfuerzo
