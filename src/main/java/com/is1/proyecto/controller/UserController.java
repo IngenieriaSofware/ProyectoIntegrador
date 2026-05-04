@@ -1,14 +1,17 @@
 package com.is1.proyecto.controller;
 
-import com.is1.proyecto.service.UserService;
-import com.is1.proyecto.models.User;
-import spark.Request;
-import spark.Response;
-import spark.ModelAndView;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
+ 
+import com.is1.proyecto.models.User;
+import com.is1.proyecto.service.AuthService;
+import com.is1.proyecto.service.UserService;
+
+import spark.ModelAndView;
+import spark.Request;
+import spark.Response;
 
 /**
  * Controlador para manejar las rutas relacionadas con usuarios.
@@ -17,9 +20,11 @@ import java.util.Map;
 public class UserController {
 
     private UserService userService;
+    private AuthService authService;
 
     public UserController() {
         this.userService = new UserService();
+        this.authService = new AuthService();
     }
 
     /**
@@ -47,19 +52,24 @@ public class UserController {
     public Object registerUser(Request req, Response res) {
         String name = req.queryParams("name");
         String password = req.queryParams("password");
+        String role = req.queryParams("role");
 
-        // Usar el servicio para registrar el usuario
-        Map<String, Object> result = userService.registerUser(name, password);
+        // Usar el servicio para registrar el usuario (con saneamiento y bcrypt)
+        Map<String, Object> result = userService.registerUser(name, password, role);
 
         if ((Boolean) result.get("success")) {
             res.status(201);
             String message = (String) result.get("message");
             String encodedMsg = URLEncoder.encode(message, StandardCharsets.UTF_8);
-            res.redirect("/user/create?message=" + encodedMsg);
+            
+            // CAMBIO: Redirige al login (/) tras el éxito
+            res.redirect("/?message=" + encodedMsg);
         } else {
             res.status(400);
             String message = (String) result.get("message");
             String encodedMsg = URLEncoder.encode(message, StandardCharsets.UTF_8);
+            
+            // Mantiene en el formulario si hay error (ej: el nombre ya existe)
             res.redirect("/user/create?error=" + encodedMsg);
         }
 
@@ -69,35 +79,54 @@ public class UserController {
     /**
      * POST /login - Procesa el login del usuario
      */
-    public ModelAndView loginUser(Request req, Response res) {
+    public Object loginUser(Request req, Response res) {
         String username = req.queryParams("username");
         String password = req.queryParams("password");
 
-        Map<String, Object> model = new HashMap<>();
-
         // Usar el servicio para autenticar el usuario
-        Map<String, Object> authResult = userService.authenticateUser(username, password);
+        Map<String, Object> authResult = userService.authenticateUser(username, password, authService);
 
         if ((Boolean) authResult.get("success")) {
             res.status(200);
             User user = (User) authResult.get("user");
+            String token = (String) authResult.get("token");
+
+            // Establecer token en cookie httpOnly
+            res.cookie("token", token, 86400, true, true);
 
             // Gestionar sesión
             req.session(true).attribute("currentUserUsername", username);
             req.session().attribute("userId", user.getId());
             req.session().attribute("loggedIn", true);
+            req.session().attribute("userRole", user.getRole());
 
             System.out.println("DEBUG: Login exitoso para la cuenta: " + username);
             System.out.println("DEBUG: ID de Sesión: " + req.session().id());
 
-            model.put("username", username);
-            return new ModelAndView(model, "dashboard.mustache");
+            // Redirigir según rol
+            String role = user.getRole();
+            switch (role) {
+                case "ADMIN":
+                    res.redirect("/admin");
+                    break;
+                case "DOCENTE":
+                    res.redirect("/docente");
+                    break;
+                case "ESTUDIANTE":
+                    res.redirect("/estudiante");
+                    break;
+                default:
+                    res.redirect("/dashboard");
+            }
+
+            return "";
         } else {
             res.status(401);
             String message = (String) authResult.get("message");
-            model.put("errorMessage", message);
+            String encodedMsg = URLEncoder.encode(message, StandardCharsets.UTF_8);
             System.out.println("DEBUG: Intento de login fallido para: " + username);
-            return new ModelAndView(model, "login.mustache");
+            res.redirect("/?error=" + encodedMsg);
+            return "";
         }
     }
 
@@ -109,15 +138,17 @@ public class UserController {
 
         String name = req.queryParams("name");
         String password = req.queryParams("password");
+        String role = req.queryParams("role");
 
         // Usar el servicio para registrar el usuario
-        Map<String, Object> result = userService.registerUser(name, password);
+        Map<String, Object> result = userService.registerUser(name, password, role);
 
         if ((Boolean) result.get("success")) {
             res.status(201);
             return jsonResponse(Map.of(
                     "message", result.get("message"),
-                    "id", result.get("userId")
+                    "id", result.get("userId"),
+                    "role", result.get("role")
             ));
         } else {
             res.status(400);

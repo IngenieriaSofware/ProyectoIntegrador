@@ -39,11 +39,30 @@ public class MainController {
 
         String currentUsername = req.session().attribute("currentUserUsername");
         Boolean loggedIn = req.session().attribute("loggedIn");
+        String userRole = req.session().attribute("userRole");
 
         // Verificar si el usuario está autenticado
         if (currentUsername == null || loggedIn == null || !loggedIn) {
             System.out.println("DEBUG: Acceso no autorizado a /dashboard. Redirigiendo a /login.");
             res.redirect("/?error=Debes iniciar sesión para acceder al dashboard.");
+            return null;
+        }
+
+        // Redirigir al dashboard específico según el rol
+        if (userRole != null) {
+            switch (userRole) {
+                case "ADMIN":
+                    res.redirect("/admin");
+                    break;
+                case "DOCENTE":
+                    res.redirect("/docente");
+                    break;
+                case "ESTUDIANTE":
+                    res.redirect("/estudiante");
+                    break;
+                default:
+                    res.redirect("/?error=Rol de usuario inválido");
+            }
             return null;
         }
 
@@ -57,6 +76,9 @@ public class MainController {
     public Object logout(Request req, Response res) {
         // Invalidar la sesión
         req.session().invalidate();
+
+        // Limpiar cookie del token
+        res.cookie("token", "", 0, true, true);
 
         System.out.println("DEBUG: Sesión cerrada. Redirigiendo a /login.");
         res.redirect("/");
