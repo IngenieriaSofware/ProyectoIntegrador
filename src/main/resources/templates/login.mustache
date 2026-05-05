@@ -5,39 +5,35 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Iniciar Sesión</title>
-    
     <link rel="stylesheet" href="/css/login-style.css" />
-    
     <link rel="stylesheet" href="https://unicons.iconscout.com/release/v4.0.0/css/line.css" />
 </head>
 <body>
-
     <section class="home">
-    
         <div class="form_container">
             <div class="form login_form">
-            
                 {{#successMessage}}
-                <div class="alert alert-success" role="alert">
-                    {{successMessage}}
-                </div>
+                <div class="alert alert-success" role="alert">{{successMessage}}</div>
                 {{/successMessage}}
-        
                 {{#errorMessage}}
-                <div class="alert alert-danger" role="alert">
-                    {{errorMessage}}
-                </div>
+                <div class="alert alert-danger" role="alert">{{errorMessage}}</div>
                 {{/errorMessage}}
 
                 <form action="/login" method="post">
                     <h2>Iniciar Sesión</h2>
                     
                     <div class="input_box">
-                        <input type="text" id="username" name="username" placeholder="Ingresa tu usuario" required />
-                        <i class="uil uil-user email"></i> </div>
+                        <!-- Requerido: Acepta DNI o Email sin patrones para no generar conflictos -->
+                        <input type="text" name="identifier" placeholder="DNI o Email" required oninput="clearError()"/>
+                        <i class="uil uil-user email"></i>
+                    </div>
                     
                     <div class="input_box">
-                        <input type="password" id="password" name="password" placeholder="Ingresa tu contraseña" required />
+                        <!-- Validación de password: Debe coincidir con los requisitos del registro -->
+                        <input type="password" name="password" placeholder="Contraseña" 
+                            pattern="^(?=.*[a-z])(?=.*[A-Z]).{8,30}$" 
+                            title="La contraseña debe tener al menos 8 caracteres, una mayúscula y una minúscula"
+                            required oninput="clearError()"/>
                         <i class="uil uil-lock password"></i>
                         <i class="uil uil-eye-slash pw_hide"></i>
                     </div>
@@ -52,14 +48,23 @@
                     <button type="submit" class="button">Iniciar Sesión</button>
                     
                     <div class="login_signup">
-                        ¿No tienes una cuenta? 
-                        <a href="/user/new">Regístrate</a>
+                        ¿No tienes una cuenta? <a href="/user/new">Regístrate</a>
                     </div>
                 </form>
             </div>
         </div>
     </section>
-
     <script src="/js/login-script.js"></script>
+    <script>
+        function clearError() {
+            const alert = document.querySelector(".alert-danger");
+            if (alert) {
+                alert.remove();
+                // También limpia la URL para que no parezca que hay un error activo
+                const cleanUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
+                window.history.replaceState({path: cleanUrl}, '', cleanUrl);
+            }
+        }
+    </script>
 </body>
 </html>

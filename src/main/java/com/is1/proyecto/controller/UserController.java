@@ -3,10 +3,10 @@ package com.is1.proyecto.controller;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
- 
-import com.is1.proyecto.models.User;
-import com.is1.proyecto.service.AuthService;
+
+import com.is1.proyecto.models.Persona;
 import com.is1.proyecto.service.UserService;
 
 import spark.ModelAndView;
@@ -14,21 +14,19 @@ import spark.Request;
 import spark.Response;
 
 /**
- * Controlador para manejar las rutas relacionadas con usuarios.
- * Delega la lógica de negocio al UserService.
+ * Controlador para login y registro de Personas.
+ * Gestiona autenticación Persona + asignación de roles.
  */
 public class UserController {
 
     private UserService userService;
-    private AuthService authService;
 
     public UserController() {
         this.userService = new UserService();
-        this.authService = new AuthService();
     }
 
     /**
-     * GET /user/create - Muestra el formulario de creación de cuenta
+     * GET /user/create - Muestra formulario de registro (Persona)
      */
     public ModelAndView showCreateForm(Request req, Response res) {
         Map<String, Object> model = new HashMap<>();
@@ -47,29 +45,35 @@ public class UserController {
     }
 
     /**
-     * POST /user/new - Procesa el registro de un nuevo usuario
+     * POST /user/new - Registra una nueva Persona
      */
-    public Object registerUser(Request req, Response res) {
-        String name = req.queryParams("name");
+    public Object registerPersona(Request req, Response res) {
+        String dni = req.queryParams("dni");
+        String nombre = req.queryParams("nombre");
+        String apellido = req.queryParams("apellido");
+        String email = req.queryParams("email");
         String password = req.queryParams("password");
-        String role = req.queryParams("role");
+        String telefono = req.queryParams("telefono");
+        String localidad = req.queryParams("localidad");
+        String rolInicial = req.queryParams("rol");
 
-        // Usar el servicio para registrar el usuario (con saneamiento y bcrypt)
-        Map<String, Object> result = userService.registerUser(name, password, role);
+        // Registrar Persona
+        Map<String, Object> result = userService.registerPersona(dni, nombre, apellido, email, 
+                                                                 password, telefono, localidad, rolInicial);
 
         if ((Boolean) result.get("success")) {
             res.status(201);
             String message = (String) result.get("message");
             String encodedMsg = URLEncoder.encode(message, StandardCharsets.UTF_8);
             
-            // CAMBIO: Redirige al login (/) tras el éxito
+            // Redirigir al login tras registro exitoso
             res.redirect("/?message=" + encodedMsg);
         } else {
             res.status(400);
             String message = (String) result.get("message");
             String encodedMsg = URLEncoder.encode(message, StandardCharsets.UTF_8);
             
-            // Mantiene en el formulario si hay error (ej: el nombre ya existe)
+            // Mantener en formulario si hay error
             res.redirect("/user/create?error=" + encodedMsg);
         }
 
@@ -77,94 +81,63 @@ public class UserController {
     }
 
     /**
-     * POST /login - Procesa el login del usuario
+     * POST /login - Autentica una Persona por DNI o Email
      */
-    public Object loginUser(Request req, Response res) {
-        String username = req.queryParams("username");
+    public Object loginPersona(Request req, Response res) {
+        String identifier = req.queryParams("identifier");  // DNI o Email
         String password = req.queryParams("password");
 
-        // Usar el servicio para autenticar el usuario
-        Map<String, Object> authResult = userService.authenticateUser(username, password, authService);
+        // Autenticar Persona
+        Map<String, Object> authResult = userService.authenticatePersona(identifier, password);
 
         if ((Boolean) authResult.get("success")) {
             res.status(200);
-            User user = (User) authResult.get("user");
+            Persona persona = (Persona) authResult.get("persona");
             String token = (String) authResult.get("token");
+            @SuppressWarnings("unchecked")
+            List<String> roles = (List<String>) authResult.get("roles");
 
             // Establecer token en cookie httpOnly
             res.cookie("token", token, 86400, true, true);
 
             // Gestionar sesión
-            req.session(true).attribute("currentUserUsername", username);
-            req.session().attribute("userId", user.getId());
+            req.session(true).attribute("personaId", persona.getId());
+            req.session().attribute("email", persona.getEmail());
+            req.session().attribute("roles", roles);
             req.session().attribute("loggedIn", true);
-            req.session().attribute("userRole", user.getRole());
 
-            System.out.println("DEBUG: Login exitoso para la cuenta: " + username);
-            System.out.println("DEBUG: ID de Sesión: " + req.session().id());
-
-            // Redirigir según rol
-            String role = user.getRole();
-            switch (role) {
-                case "ADMIN":
-                    res.redirect("/admin");
-                    break;
-                case "DOCENTE":
+            // REDIRECCIÓN según roles
+            if (roles.size() == 1) {
+                // Único rol → redirigir directo
+                String rol = roles.get(0);
+                if ("DOCENTE".equals(rol)) {
                     res.redirect("/docente");
-                    break;
-                case "ESTUDIANTE":
+                } else if ("ESTUDIANTE".equals(rol)) {
                     res.redirect("/estudiante");
-                    break;
-                default:
-                    res.redirect("/dashboard");
+                }
+            } else if (roles.size() > 1) {
+                // Múltiples roles → mostrar selector
+                res.redirect("/dashboard?selectRole=true");
             }
-
-            return "";
         } else {
             res.status(401);
             String message = (String) authResult.get("message");
             String encodedMsg = URLEncoder.encode(message, StandardCharsets.UTF_8);
-            System.out.println("DEBUG: Intento de login fallido para: " + username);
+            
+            // Volver al login con error
             res.redirect("/?error=" + encodedMsg);
-            return "";
         }
+
+        return "";
     }
 
     /**
-     * POST /add_users - Endpoint API para agregar usuarios (devuelve JSON)
+     * GET /logout - Cierra sesión
      */
-    public String addUserAPI(Request req, Response res) {
-        res.type("application/json");
-
-        String name = req.queryParams("name");
-        String password = req.queryParams("password");
-        String role = req.queryParams("role");
-
-        // Usar el servicio para registrar el usuario
-        Map<String, Object> result = userService.registerUser(name, password, role);
-
-        if ((Boolean) result.get("success")) {
-            res.status(201);
-            return jsonResponse(Map.of(
-                    "message", result.get("message"),
-                    "id", result.get("userId"),
-                    "role", result.get("role")
-            ));
-        } else {
-            res.status(400);
-            return jsonResponse(Map.of("error", result.get("message")));
-        }
-    }
-
-    /**
-     * Método auxiliar para convertir un mapa a JSON
-     */
-    private String jsonResponse(Map<String, Object> map) {
-        try {
-            com.fasterxml.jackson.databind.ObjectMapper objectMapper = new com.fasterxml.jackson.databind.ObjectMapper();
-            return objectMapper.writeValueAsString(map);
-        } catch (Exception e) {
-            return "{\"error\": \"Error al procesar la solicitud\"}";
-        }
+    public Object logout(Request req, Response res) {
+        req.session().invalidate();
+        res.removeCookie("token");
+        res.redirect("/?message=Sesion cerrada exitosamente");
+        return "";
     }
 }

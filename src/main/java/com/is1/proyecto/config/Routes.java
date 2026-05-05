@@ -3,11 +3,9 @@ package com.is1.proyecto.config;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.is1.proyecto.controller.AdminController;
 import com.is1.proyecto.controller.DocenteController;
 import com.is1.proyecto.controller.EstudianteController;
 import com.is1.proyecto.controller.MainController;
-import com.is1.proyecto.controller.ProfessorController;
 import com.is1.proyecto.controller.UserController;
 import com.is1.proyecto.middleware.AuthMiddleware;
 
@@ -21,7 +19,8 @@ import spark.template.mustache.MustacheTemplateEngine;
 
 /**
  * Configurador de rutas de la aplicación.
- * Centraliza la definición de todas las rutas y sus mapeos a controladores.
+ * Sistema de Login y Control de Acceso con roles duales (N:N).
+ * El rol ADMIN ha sido eliminado. Las funciones de gestión usan permisos dinámicos.
  */
 public class Routes {
 
@@ -34,42 +33,67 @@ public class Routes {
         // Inicializar controladores
         MainController mainController = new MainController();
         UserController userController = new UserController();
-        ProfessorController professorController = new ProfessorController();
-        AdminController adminController = new AdminController();
         DocenteController docenteController = new DocenteController();
         EstudianteController estudianteController = new EstudianteController();
 
-        // --- Rutas principales ---
+        // ========================================
+        // RUTAS DE AUTENTICACIÓN (sin protección)
+        // ========================================
+
+        // GET / - Página de login
         get("/", (req, res) -> mainController.showLogin(req, res), templateEngine);
+
+        // GET /user/new - Formulario de registro (Persona)
+        get("/user/new", (req, res) -> userController.showCreateForm(req, res), templateEngine);
+
+        // POST /user/new - Registra una nueva Persona
+        post("/user/new", (req, res) -> userController.registerPersona(req, res));
+
+        // POST /login - Autentica Persona por DNI/Email
+        post("/login", (req, res) -> userController.loginPersona(req, res));
+
+        // GET /logout - Cierra sesión
+        get("/logout", (req, res) -> userController.logout(req, res));
+
+        // ========================================
+        // RUTAS PROTEGIDAS: DASHBOARD
+        // ========================================
+
+        // GET /dashboard - Dashboard general (para seleccionar rol si hay múltiples)
         get("/dashboard", (req, res) -> mainController.showDashboard(req, res), templateEngine);
-        get("/logout", (req, res) -> mainController.logout(req, res));
-        get("/user/new", (req, res) -> mainController.showUserCreateForm(req, res), templateEngine);
 
-        // --- Rutas de usuario ---
-        get("/user/create", (req, res) -> userController.showCreateForm(req, res), templateEngine);
-        post("/user/new", (req, res) -> userController.registerUser(req, res));
-        
-        // CORRECCIÓN: Se quita el templateEngine porque el controlador maneja la redirección/JSON
-        post("/login", (req, res) -> userController.loginUser(req, res));
-        
-        post("/add_users", (req, res) -> userController.addUserAPI(req, res));
+        // ========================================
+        // RUTAS PROTEGIDAS: DOCENTE
+        // ========================================
 
-        // --- Rutas de profesor ---
-        get("/professor/new", (req, res) -> professorController.showCreateForm(req, res), templateEngine);
-        post("/professor/new", (req, res) -> professorController.createProfessor(req, res));
-        get("/professor/list", (req, res) -> professorController.listProfessors(req, res), templateEngine);
-
-        // --- Rutas por rol ---
-        get("/admin", (req, res) -> adminController.showAdminDashboard(req, res), templateEngine);
+        // GET /docente - Dashboard de Docente
         get("/docente", (req, res) -> docenteController.showDocenteDashboard(req, res), templateEngine);
+
+        // ========================================
+        // RUTAS PROTEGIDAS: ESTUDIANTE
+        // ========================================
+
+        // GET /estudiante - Dashboard de Estudiante
         get("/estudiante", (req, res) -> estudianteController.showEstudianteDashboard(req, res), templateEngine);
 
-        // --- Rutas protegidas (Middleware optimizado) ---
-        before("/admin", AuthMiddleware.requireRole("ADMIN"));
+        // ========================================
+        // APLICAR MIDDLEWARE DE PROTECCIÓN
+        // ========================================
+
+        // Dashboard requiere autenticación (cualquier rol)
+        before("/dashboard", AuthMiddleware.requireAuth);
+
+        // Docente requiere rol DOCENTE
         before("/docente", AuthMiddleware.requireRole("DOCENTE"));
+
+        // Estudiante requiere rol ESTUDIANTE
         before("/estudiante", AuthMiddleware.requireRole("ESTUDIANTE"));
 
-        // --- Manejador para errores 404 ---
+        // ========================================
+        // MANEJADORES DE ERRORES
+        // ========================================
+
+        // 404 - Página no encontrada
         notFound((req, res) -> {
             Map<String, Object> model = new HashMap<>();
             model.put("errorMessage", "No pudimos encontrar la página que buscabas (Error 404).");
@@ -77,7 +101,7 @@ public class Routes {
             return templateEngine.render(new ModelAndView(model, "error.mustache"));
         });
 
-        // --- Manejador para errores 500 ---
+        // 500 - Error interno del servidor
         exception(Exception.class, (exception, req, res) -> {
             Map<String, Object> model = new HashMap<>();
             model.put("errorMessage", "Error interno del servidor: " + exception.getMessage());

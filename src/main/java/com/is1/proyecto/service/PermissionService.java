@@ -1,70 +1,143 @@
 package com.is1.proyecto.service;
 
+import java.util.List;
+
+import com.is1.proyecto.models.Permiso;
+import com.is1.proyecto.models.Persona;
+
+/**
+ * Servicio de permisos - Gestión de accesos basada en:
+ * 1. Roles dinámicos (DOCENTE, ESTUDIANTE) asignados a Persona
+ * 2. Permisos específicos asignados a Persona
+ * 
+ * NOTA: El rol "ADMIN" ha sido eliminado. Las funciones de gestión
+ * que antes requerían ADMIN ahora dependen de permisos específicos
+ * (ej: "gestionar_estudiantes", "gestionar_docentes").
+ */
 public class PermissionService {
 
-    public enum Role {
-        ADMIN, DOCENTE, ESTUDIANTE
+    /**
+     * Verifica si una persona tiene un rol específico
+     */
+    public static boolean hasRole(Persona persona, String rol) {
+        if (persona == null) return false;
+        return persona.getRoleNames().contains(rol);
     }
 
-    public static boolean isAdmin(String role) {
-        return Role.ADMIN.name().equals(role);
+    /**
+     * Verifica si una persona es DOCENTE
+     */
+    public static boolean isDocente(Persona persona) {
+        return hasRole(persona, "DOCENTE");
     }
 
-    public static boolean isDocente(String role) {
-        return Role.DOCENTE.name().equals(role);
+    /**
+     * Verifica si una persona es ESTUDIANTE
+     */
+    public static boolean isEstudiante(Persona persona) {
+        return hasRole(persona, "ESTUDIANTE");
     }
 
-    public static boolean isEstudiante(String role) {
-        return Role.ESTUDIANTE.name().equals(role);
+    /**
+     * Verifica si una persona tiene múltiples roles (Docente Y Estudiante)
+     */
+    public static boolean hasMultipleRoles(Persona persona) {
+        if (persona == null) return false;
+        return persona.getRoleNames().size() > 1;
     }
 
-    public static boolean canViewAllData(String role) {
-        return isAdmin(role);
+    /**
+     * Verifica si una persona tiene un permiso específico
+     * Busca en la tabla persona_permisos
+     */
+    public static boolean hasPermission(Persona persona, String permissionName) {
+        if (persona == null) return false;
+        
+        // Buscar permisos asignados a esta persona
+        List<Permiso> assignedPermisos = Permiso.where(
+            "id IN (SELECT permiso_id FROM persona_permisos WHERE persona_id = ?)", 
+            persona.getId()
+        );
+        
+        return assignedPermisos.stream()
+            .anyMatch(p -> permissionName.equals(p.getNombre()));
     }
 
-    public static boolean canEditAllData(String role) {
-        return isAdmin(role);
+    /**
+     * Verifica si una persona puede gestionar estudiantes
+     * Requiere permiso "gestionar_estudiantes"
+     */
+    public static boolean canManageStudents(Persona persona) {
+        return hasPermission(persona, "gestionar_estudiantes");
     }
 
-    public static boolean canCreateUser(String role) {
-        return isAdmin(role);
+    /**
+     * Verifica si una persona puede gestionar docentes
+     * Requiere permiso "gestionar_docentes"
+     */
+    public static boolean canManageProfessors(Persona persona) {
+        return hasPermission(persona, "gestionar_docentes");
     }
 
-    public static boolean canCreateProfessor(String role) {
-        return isAdmin(role) || isDocente(role);
+    /**
+     * Verifica si una persona puede ver reportes
+     * Requiere permiso "ver_reportes"
+     */
+    public static boolean canViewReports(Persona persona) {
+        return hasPermission(persona, "ver_reportes");
     }
 
-    public static boolean canViewProfessor(String role, String professorOwnerId, String currentUserId) {
-        if (isAdmin(role)) return true;
-        if (isDocente(role) && professorOwnerId.equals(currentUserId)) return true;
-        return false;
+    /**
+     * Verifica si una persona puede gestionar calificaciones
+     * DOCENTES: requiere permiso "gestionar_calificaciones"
+     */
+    public static boolean canManageGrades(Persona persona) {
+        if (persona == null) return false;
+        
+        // Si es docente Y tiene permiso específico
+        return isDocente(persona) && hasPermission(persona, "gestionar_calificaciones");
     }
 
-    public static boolean canEditProfessor(String role, String professorOwnerId, String currentUserId) {
-        if (isAdmin(role)) return true;
-        if (isDocente(role) && professorOwnerId.equals(currentUserId)) return true;
-        return false;
+    /**
+     * Verifica si una persona puede ver estudiantes de su cátedra
+     * DOCENTES: requiere permiso "ver_estudiantes_catedra"
+     */
+    public static boolean canViewCourseStudents(Persona persona) {
+        if (persona == null) return false;
+        
+        return isDocente(persona) && hasPermission(persona, "ver_estudiantes_catedra");
     }
 
-    public static boolean canViewUserData(String role, String dataOwnerId, String currentUserId) {
-        if (isAdmin(role)) return true;
-        if (dataOwnerId.equals(currentUserId)) return true;
-        return false;
+    /**
+     * Verifica si una persona puede crear evaluaciones
+     * DOCENTES: requiere permiso "crear_evaluaciones"
+     */
+    public static boolean canCreateEvaluations(Persona persona) {
+        if (persona == null) return false;
+        
+        return isDocente(persona) && hasPermission(persona, "crear_evaluaciones");
     }
 
-    public static boolean canEditUserData(String role, String dataOwnerId, String currentUserId) {
-        if (isAdmin(role)) return true;
-        if (isEstudiante(role)) return false;
-        if (isDocente(role)) return dataOwnerId.equals(currentUserId);
-        return false;
+    /**
+     * Verifica si una persona puede ver sus propios datos
+     * Siempre permitido para datos propios
+     */
+    public static boolean canViewOwnData(Persona persona, int personaId) {
+        return persona != null && ((Number) persona.getId()).intValue() == personaId;
     }
 
-    public static boolean isValidRole(String role) {
-        try {
-            Role.valueOf(role.toUpperCase());
-            return true;
-        } catch (IllegalArgumentException e) {
-            return false;
-        }
+    /**
+     * Verifica si una persona puede editar sus propios datos
+     * Siempre permitido para datos propios
+     */
+    public static boolean canEditOwnData(Persona persona, int personaId) {
+        return persona != null && ((Number) persona.getId()).intValue() == personaId;
+    }
+
+    /**
+     * Valida si un rol es válido en el nuevo esquema
+     */
+    public static boolean isValidRole(String rol) {
+        return "DOCENTE".equals(rol) || "ESTUDIANTE".equals(rol);
     }
 }

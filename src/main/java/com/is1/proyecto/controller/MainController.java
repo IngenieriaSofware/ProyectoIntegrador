@@ -1,19 +1,21 @@
 package com.is1.proyecto.controller;
 
-import spark.Request;
-import spark.Response;
-import spark.ModelAndView;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import spark.ModelAndView;
+import spark.Request;
+import spark.Response;
+
 /**
- * Controlador para manejar las rutas principales de la aplicación.
- * Maneja login, dashboard y logout.
+ * Controlador principal - Login, Dashboard y Logout.
+ * Gestiona redirección según roles (N:N).
  */
 public class MainController {
 
     /**
-     * GET / - Muestra la página de login
+     * GET / - Página de login
      */
     public ModelAndView showLogin(Request req, Response res) {
         Map<String, Object> model = new HashMap<>();
@@ -32,64 +34,50 @@ public class MainController {
     }
 
     /**
-     * GET /dashboard - Muestra el dashboard del usuario logueado
+     * GET /dashboard - Dashboard con selector de rol si hay múltiples
      */
     public ModelAndView showDashboard(Request req, Response res) {
         Map<String, Object> model = new HashMap<>();
 
-        String currentUsername = req.session().attribute("currentUserUsername");
-        Boolean loggedIn = req.session().attribute("loggedIn");
-        String userRole = req.session().attribute("userRole");
+        @SuppressWarnings("unchecked")
+        List<String> roles = (List<String>) req.session().attribute("roles");
+        String email = req.session().attribute("email");
+        Integer personaId = (Integer) req.session().attribute("personaId");
 
-        // Verificar si el usuario está autenticado
-        if (currentUsername == null || loggedIn == null || !loggedIn) {
-            System.out.println("DEBUG: Acceso no autorizado a /dashboard. Redirigiendo a /login.");
-            res.redirect("/?error=Debes iniciar sesión para acceder al dashboard.");
+        if (email == null || roles == null || roles.isEmpty()) {
+            res.redirect("/?error=Sesion inválida");
             return null;
         }
 
-        // Redirigir al dashboard específico según el rol
-        if (userRole != null) {
-            switch (userRole) {
-                case "ADMIN":
-                    res.redirect("/admin");
-                    break;
-                case "DOCENTE":
-                    res.redirect("/docente");
-                    break;
-                case "ESTUDIANTE":
-                    res.redirect("/estudiante");
-                    break;
-                default:
-                    res.redirect("/?error=Rol de usuario inválido");
-            }
-            return null;
+        // Si tiene múltiples roles, mostrar selector
+        if (roles.size() > 1) {
+            model.put("email", email);
+            model.put("personaId", personaId);
+            model.put("roles", roles);
+            model.put("multipleRoles", true);
+            return new ModelAndView(model, "dashboard.mustache");
         }
 
-        model.put("username", currentUsername);
-        return new ModelAndView(model, "dashboard.mustache");
-    }
-
-    /**
-     * GET /logout - Cierra la sesión del usuario
-     */
-    public Object logout(Request req, Response res) {
-        // Invalidar la sesión
-        req.session().invalidate();
-
-        // Limpiar cookie del token
-        res.cookie("token", "", 0, true, true);
-
-        System.out.println("DEBUG: Sesión cerrada. Redirigiendo a /login.");
-        res.redirect("/");
+        // Si tiene solo 1 rol, redirigir directamente (no debería llegar aquí)
+        String rol = roles.get(0);
+        if ("DOCENTE".equals(rol)) {
+            res.redirect("/docente");
+        } else if ("ESTUDIANTE".equals(rol)) {
+            res.redirect("/estudiante");
+        } else {
+            res.redirect("/?error=Rol desconocido");
+        }
 
         return null;
     }
 
     /**
-     * GET /user/new - Muestra el formulario de creación de usuario (alias)
+     * GET /logout - Cierra sesión
      */
-    public ModelAndView showUserCreateForm(Request req, Response res) {
-        return new ModelAndView(new HashMap<>(), "user_form.mustache");
+    public Object logout(Request req, Response res) {
+        req.session().invalidate();
+        res.removeCookie("token");
+        res.redirect("/?message=Sesion cerrada exitosamente");
+        return null;
     }
 }

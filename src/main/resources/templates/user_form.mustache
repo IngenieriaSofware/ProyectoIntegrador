@@ -5,61 +5,154 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Crear una cuenta</title>
-    
     <link rel="stylesheet" href="/css/login-style.css" />
-    
     <link rel="stylesheet" href="https://unicons.iconscout.com/release/v4.0.0/css/line.css" />
+    <style>
+        .input_box select {
+            width: 100%;
+            height: 100%;
+            outline: none;
+            padding: 0 30px;
+            border-radius: 6px;
+            border: 1.5px solid #aaaaaa;
+            transition: all 0.3s ease;
+            background: #fff;
+            appearance: none;
+        }
+        .input_box select:focus { border-color: #7d2ae8; }
+
+        /* Validación en tiempo real */
+        .input_box input.invalid { border-color: #e53935 !important; }
+        .input_box input.valid   { border-color: #43a047 !important; }
+
+        .field-hint {
+            font-size: 10.5px;
+            margin-top: 1px;
+            margin-left: 2px;
+            min-height: 13px;
+            line-height: 1.2;
+            transition: color 0.2s;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .field-hint.error { color: #e53935; }
+        .field-hint.ok    { color: #43a047; }
+
+
+    </style>
 </head>
 <body>
-
     <section class="home">
-    
         <div class="form_container">
             <div class="form login_form">
-            
                 {{#successMessage}}
-                <div class="alert alert-success" role="alert">
-                    {{successMessage}}
-                </div>
+                <div class="alert alert-success" role="alert">{{successMessage}}</div>
                 {{/successMessage}}
-        
                 {{#errorMessage}}
-                <div class="alert alert-danger" role="alert">
-                    {{errorMessage}}
-                </div>
+                <div class="alert alert-danger" role="alert">{{errorMessage}}</div>
                 {{/errorMessage}}
 
                 <form action="/user/new" method="post">
                     <h2>Crear una cuenta</h2>
-                    
+
+                    <!-- DNI: solo dígitos, máximo 8 -->
                     <div class="input_box">
-                        <input type="text" id="name" name="name" placeholder="Ingresa tu nombre de usuario" required />
-                        <i class="uil uil-user email"></i>
-                    </div>
-                    
-                    <div class="input_box">
-                        <input type="password" id="password" name="password" placeholder="Crea una contraseña" required />
-                        <i class="uil uil-lock password"></i>
-                        <i class="uil uil-eye-slash pw_hide"></i>
+                        <input
+                            type="text"
+                            id="dni"
+                            name="dni"
+                            placeholder="DNI (7 u 8 dígitos)"
+                            maxlength="8"
+                            inputmode="numeric"
+                            pattern="\d{7,8}"
+                            title="Debe ser un número de 7 u 8 dígitos"
+                            required
+                        />
+                        <i class="uil uil-card-atm email"></i>
+                        <div class="field-hint" id="dni-hint"></div>
                     </div>
 
                     <div class="input_box">
-                        <select id="role" name="role" required>
-                            <option value="">Selecciona tu rol</option>
+                        <input type="text" name="nombre" placeholder="Nombre" required />
+                        <i class="uil uil-user email"></i>
+                    </div>
+
+                    <div class="input_box">
+                        <input type="text" name="apellido" placeholder="Apellido" required />
+                        <i class="uil uil-user email"></i>
+                    </div>
+
+                    <!-- Email: validación en tiempo real -->
+                    <div class="input_box">
+                        <input
+                            type="email"
+                            id="email"
+                            name="email"
+                            placeholder="Email (ejemplo@mail.com)"
+                            required
+                        />
+                        <i class="uil uil-envelope email"></i>
+                        <div class="field-hint" id="email-hint"></div>
+                    </div>
+
+                    <!-- Contraseña: validación en tiempo real -->
+                    <div class="input_box">
+                        <input
+                            type="password"
+                            id="password"
+                            name="password"
+                            placeholder="Min 8 carac., 1 Mayús., 1 Minús."
+                            pattern="^(?=.*[a-z])(?=.*[A-Z]).{8,30}$"
+                            title="La contraseña debe tener al menos 8 caracteres, una mayúscula y una minúscula"
+                            required
+                        />
+                        <i class="uil uil-lock password"></i>
+                        <i class="uil uil-eye-slash pw_hide"></i>
+                        <div class="field-hint" id="pw-hint"></div>
+                    </div>
+
+                    <!-- Teléfono: auto-formato +XX X XXX XXX XXXX -->
+                    <div class="input_box">
+                        <input
+                            type="text"
+                            id="telefono"
+                            name="telefono"
+                            placeholder="+54 9 358 456 7890"
+                            maxlength="18"
+                            inputmode="numeric"
+                            required
+                        />
+                        <i class="uil uil-phone email"></i>
+                        <div class="field-hint" id="tel-hint"></div>
+                    </div>
+
+                    <!-- Localidad -->
+                    <div class="input_box">
+                        <input
+                            type="text"
+                            name="localidad"
+                            placeholder="CIUDAD, PROVINCIA, PAIS"
+                            pattern="^[^,]+,\s*[^,]+,\s*[^,]+$"
+                            title="Formato: CIUDAD, PROVINCIA, PAIS"
+                            required
+                        />
+                        <i class="uil uil-map-marker email"></i>
+                    </div>
+
+                    <div class="input_box">
+                        <select name="rol" required>
+                            <option value="" disabled selected>Selecciona tu rol inicial</option>
                             <option value="ESTUDIANTE">Estudiante</option>
                             <option value="DOCENTE">Docente</option>
-                            <option value="ADMIN">Administrador</option>
                         </select>
                         <i class="uil uil-user-shield email"></i>
                     </div>
 
-                    <button type="submit" class="button">
-                        Registrar Usuario
-                    </button>
-                    
+                    <button type="submit" class="button">Registrar Usuario</button>
+
                     <div class="login_signup">
-                        ¿Ya tienes una cuenta? 
-                        <a href="/">Volver al inicio</a>
+                        ¿Ya tienes una cuenta? <a href="/">Volver al inicio</a>
                     </div>
                 </form>
             </div>
@@ -67,5 +160,128 @@
     </section>
 
     <script src="/js/login-script.js"></script>
+    <script>
+    // ── Utilidad: aplicar estado visual ──────────────────────────────────────
+    function setFieldState(input, hint, isValid, message) {
+        if (isValid) {
+            input.classList.add('valid');
+            input.classList.remove('invalid');
+            hint.textContent = message;
+            hint.className = 'field-hint ok';
+        } else {
+            input.classList.add('invalid');
+            input.classList.remove('valid');
+            hint.textContent = message;
+            hint.className = 'field-hint error';
+        }
+    }
+
+    function clearFieldState(input, hint) {
+        input.classList.remove('valid', 'invalid');
+        hint.textContent = '';
+        hint.className = 'field-hint';
+    }
+
+    // ── DNI: solo dígitos, 7-8 caracteres ────────────────────────────────────
+    const dniInput = document.getElementById('dni');
+    const dniHint  = document.getElementById('dni-hint');
+
+    dniInput.addEventListener('input', () => {
+        // Bloquear cualquier carácter no numérico
+        dniInput.value = dniInput.value.replace(/\D/g, '');
+
+        const len = dniInput.value.length;
+        if (len === 0) {
+            clearFieldState(dniInput, dniHint);
+        } else if (len < 7) {
+            setFieldState(dniInput, dniHint, false, `Faltan ${7 - len} dígito(s) como mínimo`);
+        } else {
+            setFieldState(dniInput, dniHint, true, '✓ DNI válido');
+        }
+    });
+
+    // ── EMAIL ─────────────────────────────────────────────────────────────────
+    const emailInput = document.getElementById('email');
+    const emailHint  = document.getElementById('email-hint');
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    emailInput.addEventListener('input', () => {
+        const val = emailInput.value.trim();
+        if (val.length === 0) {
+            clearFieldState(emailInput, emailHint);
+            return;
+        }
+        if (!val.includes('@')) {
+            setFieldState(emailInput, emailHint, false, 'Falta el símbolo @');
+        } else if (!emailRegex.test(val)) {
+            setFieldState(emailInput, emailHint, false, 'Formato inválido — ej: usuario@mail.com');
+        } else {
+            setFieldState(emailInput, emailHint, true, '✓ Email válido');
+        }
+    });
+
+    // ── CONTRASEÑA ────────────────────────────────────────────────────────────
+    const pwInput = document.getElementById('password');
+    const pwHint  = document.getElementById('pw-hint');
+
+    pwInput.addEventListener('input', () => {
+        const val = pwInput.value;
+        if (val.length === 0) {
+            clearFieldState(pwInput, pwHint);
+            return;
+        }
+
+        const errors = [];
+        if (val.length < 8)      errors.push('mín. 8 carac.');
+        if (!/[a-z]/.test(val))  errors.push('1 minúsc.');
+        if (!/[A-Z]/.test(val))  errors.push('1 mayúsc.');
+
+        if (errors.length > 0) {
+            setFieldState(pwInput, pwHint, false, 'Falta: ' + errors.join(' · '));
+        } else {
+            setFieldState(pwInput, pwHint, true, '✓ Contraseña válida');
+        }
+    });
+
+    // ── TELÉFONO: auto-formato +XX X XXX XXX XXXX ────────────────────────────
+    // El usuario solo escribe dígitos; el código agrega +, espacios y tope.
+    // Estructura: [2 país] [1 área] [3 característica] [3 parte1] [4 parte2]
+    const telInput = document.getElementById('telefono');
+    const telHint  = document.getElementById('tel-hint');
+
+    telInput.addEventListener('keydown', (e) => {
+        // Permitir: backspace, delete, flechas, tab, ctrl+A/C/V/X
+        const allowed = ['Backspace','Delete','ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Tab','Home','End'];
+        if (allowed.includes(e.key)) return;
+        if (e.ctrlKey || e.metaKey) return;
+        // Bloquear todo lo que no sea dígito
+        if (!/^\d$/.test(e.key)) e.preventDefault();
+    });
+
+    telInput.addEventListener('input', () => {
+        // Extraer solo dígitos de lo que haya
+        let digits = telInput.value.replace(/\D/g, '').slice(0, 13); // máx 13 dígitos: 2+1+3+3+4
+
+        // Construir formato: +XX X XXX XXX XXXX
+        let formatted = '';
+        if (digits.length > 0)  formatted  = '+' + digits.slice(0, 2);         // país
+        if (digits.length > 2)  formatted += ' '  + digits.slice(2, 3);        // área (1 dígito)
+        if (digits.length > 3)  formatted += ' '  + digits.slice(3, 6);        // característica (3)
+        if (digits.length > 6)  formatted += ' '  + digits.slice(6, 9);        // primeros 3 del número
+        if (digits.length > 9)  formatted += ' '  + digits.slice(9, 13);       // últimos 4
+
+        telInput.value = formatted;
+
+        // Validación visual
+        if (digits.length === 0) {
+            clearFieldState(telInput, telHint);
+        } else if (digits.length < 13) {
+            const faltantes = 13 - digits.length;
+            setFieldState(telInput, telHint, false, `Faltan ${faltantes} dígito(s)`);
+        } else {
+            setFieldState(telInput, telHint, true, '✓ Teléfono válido');
+        }
+    });
+    </script>
 </body>
 </html>
