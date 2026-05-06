@@ -30,21 +30,27 @@ public class App {
         // --- Inicialización de Tablas (Solo si no existen) ---
         try {
             Base.open(dbConfig.getDriver(), dbConfig.getDbUrl(), dbConfig.getUser(), dbConfig.getPass());
-            // Leemos el scheme.sql desde los recursos
             java.io.InputStream is = App.class.getResourceAsStream("/scheme.sql");
             if (is != null) {
                 String schema = new java.util.Scanner(is).useDelimiter("\\A").next();
-                // Ejecutamos el script. Nota: SQLite permite ejecutar múltiples sentencias así
+                int ok = 0, skip = 0;
                 for (String sql : schema.split(";")) {
-                    if (!sql.trim().isEmpty()) {
-                        Base.exec(sql);
+                    String stmt = sql.trim();
+                    if (stmt.isEmpty()) continue;
+                    try {
+                        Base.exec(stmt);
+                        ok++;
+                    } catch (Exception e) {
+                        // ALTER TABLE con columna ya existente u otro conflicto idempotente — ignorar
+                        System.out.println("[SCHEMA SKIP] " + e.getMessage().split("\n")[0]);
+                        skip++;
                     }
                 }
-                System.out.println("✓ Esquema de base de datos verificado/aplicado.");
+                System.out.println("✓ Esquema aplicado: " + ok + " sentencias OK, " + skip + " omitidas.");
             }
             Base.close();
         } catch (Exception e) {
-            System.err.println("Advertencia al inicializar base de datos: " + e.getMessage());
+            System.err.println("Error crítico al inicializar base de datos: " + e.getMessage());
             if (Base.hasConnection()) Base.close();
         }
 

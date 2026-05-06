@@ -147,3 +147,118 @@ CREATE TABLE IF NOT EXISTS audit_logs (
 ALTER TABLE personas ADD COLUMN enabled INTEGER DEFAULT 1;
 ALTER TABLE personas ADD COLUMN ban_reason TEXT;
 
+-- ========================================
+-- MÓDULO B.1 - OFERTA ACADÉMICA
+-- ========================================
+
+CREATE TABLE IF NOT EXISTS carreras (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    codigo TEXT NOT NULL UNIQUE,
+    nombre TEXT NOT NULL,
+    descripcion TEXT,
+    activa INTEGER NOT NULL DEFAULT 1,
+    creada_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    actualizada_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS planes_estudio (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    carrera_id INTEGER NOT NULL,
+    anio_vigencia INTEGER NOT NULL,
+    descripcion TEXT,
+    duracion_anios INTEGER,
+    activo INTEGER NOT NULL DEFAULT 0,
+    creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    actualizado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (carrera_id) REFERENCES carreras(id),
+    UNIQUE (carrera_id, anio_vigencia)
+);
+
+-- ========================================
+-- MÓDULO B.1 EXTENSION - PERÍODOS LECTIVOS
+-- ========================================
+
+CREATE TABLE IF NOT EXISTS periodos_lectivos (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    anio INTEGER NOT NULL,
+    cuatrimestre INTEGER NOT NULL CHECK(cuatrimestre IN (1, 2)),
+    descripcion TEXT,
+    activo INTEGER NOT NULL DEFAULT 0,
+    creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (anio, cuatrimestre)
+);
+
+-- ========================================
+-- MÓDULO C.1 - COMISIONES
+-- ========================================
+
+CREATE TABLE IF NOT EXISTS comisiones (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    materia_id INTEGER NOT NULL,
+    plan_estudio_id INTEGER NOT NULL,
+    periodo_id INTEGER NOT NULL,
+    turno TEXT NOT NULL CHECK(turno IN ('MANANA', 'TARDE', 'NOCHE')),
+    nombre TEXT,
+    estado TEXT NOT NULL DEFAULT 'ACTIVA' CHECK(estado IN ('ACTIVA', 'CERRADA')),
+    creada_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    actualizada_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    creada_por INTEGER,
+    UNIQUE (materia_id, plan_estudio_id, periodo_id, turno),
+    FOREIGN KEY (materia_id) REFERENCES materias(id),
+    FOREIGN KEY (plan_estudio_id) REFERENCES planes_estudio(id),
+    FOREIGN KEY (periodo_id) REFERENCES periodos_lectivos(id),
+    FOREIGN KEY (creada_por) REFERENCES personas(id)
+);
+
+-- ========================================
+-- MÓDULO D.1 - ASIGNACIÓN DOCENTES
+-- ========================================
+
+CREATE TABLE IF NOT EXISTS asignaciones_docentes (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    comision_id INTEGER NOT NULL,
+    docente_id INTEGER NOT NULL,
+    cargo TEXT NOT NULL CHECK(cargo IN ('TITULAR', 'JTP', 'AYUDANTE')),
+    fecha_asignacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    asignado_por INTEGER NOT NULL,
+    activa INTEGER NOT NULL DEFAULT 1,
+    UNIQUE (comision_id, docente_id),
+    FOREIGN KEY (comision_id) REFERENCES comisiones(id),
+    FOREIGN KEY (docente_id) REFERENCES docentes(id),
+    FOREIGN KEY (asignado_por) REFERENCES personas(id)
+);
+
+-- ========================================
+-- MÓDULO B.2 - GESTIÓN DE MATERIAS
+-- ========================================
+
+CREATE TABLE IF NOT EXISTS materias (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    codigo TEXT NOT NULL UNIQUE,
+    nombre TEXT NOT NULL UNIQUE,
+    descripcion TEXT,
+    activa INTEGER NOT NULL DEFAULT 1,
+    creada_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    actualizada_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    creada_por INTEGER,
+    FOREIGN KEY (creada_por) REFERENCES personas(id)
+);
+
+CREATE TABLE IF NOT EXISTS materias_planes (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    materia_id INTEGER NOT NULL,
+    plan_estudio_id INTEGER NOT NULL,
+    anio_plan INTEGER NOT NULL,
+    cuatrimestre TEXT NOT NULL CHECK(cuatrimestre IN ('PRIMERO', 'SEGUNDO', 'ANUAL')),
+    carga_horaria INTEGER NOT NULL,
+    caracter TEXT NOT NULL CHECK(caracter IN ('OBLIGATORIA', 'ELECTIVA')),
+    activa INTEGER NOT NULL DEFAULT 1,
+    creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    actualizado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    creado_por INTEGER,
+    UNIQUE (materia_id, plan_estudio_id),
+    FOREIGN KEY (materia_id) REFERENCES materias(id),
+    FOREIGN KEY (plan_estudio_id) REFERENCES planes_estudio(id),
+    FOREIGN KEY (creado_por) REFERENCES personas(id)
+);
+

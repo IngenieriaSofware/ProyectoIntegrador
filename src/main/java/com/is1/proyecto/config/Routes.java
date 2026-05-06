@@ -4,6 +4,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.is1.proyecto.controller.AdministradorController;
+import com.is1.proyecto.controller.CarreraController;
+import com.is1.proyecto.controller.MateriaController;
+import com.is1.proyecto.controller.PeriodoController;
+import com.is1.proyecto.controller.ComisionController;
 import com.is1.proyecto.controller.DocenteController;
 import com.is1.proyecto.controller.DocenteCrudController;
 import com.is1.proyecto.controller.EnConstruccionController;
@@ -41,6 +45,10 @@ public class Routes {
         EstudianteController estudianteController = new EstudianteController();
         AdministradorController administradorController = new AdministradorController();
         EnConstruccionController enConstruccionController = new EnConstruccionController();
+        CarreraController carreraController = new CarreraController();
+        MateriaController materiaController = new MateriaController();
+        PeriodoController periodoController = new PeriodoController();
+        ComisionController comisionController = new ComisionController();
         // ========================================
         // RUTAS DE AUTENTICACIÓN (sin protección)
         // ========================================
@@ -110,6 +118,68 @@ public class Routes {
         get("/en_construccion", (req, res) -> enConstruccionController.showEnConstruccion(req, res), templateEngine);
 
         // ========================================
+        // RUTAS: GESTIÓN DE CARRERAS (B.1)
+        // ========================================
+        get("/admin/carreras",                                          (req, res) -> carreraController.listCarreras(req, res), templateEngine);
+        get("/admin/carreras/nueva",                                    (req, res) -> carreraController.showCarreraForm(req, res), templateEngine);
+        post("/admin/carreras/nueva",                                   (req, res) -> carreraController.createCarrera(req, res));
+        get("/admin/carreras/:id",                                      (req, res) -> carreraController.showCarreraDetalle(req, res), templateEngine);
+        get("/admin/carreras/:id/editar",                               (req, res) -> carreraController.showEditCarreraForm(req, res), templateEngine);
+        post("/admin/carreras/:id/editar",                              (req, res) -> carreraController.updateCarrera(req, res));
+        post("/admin/carreras/:id/baja",                                (req, res) -> carreraController.darDeBajaCarrera(req, res));
+        get("/admin/carreras/:id/planes/nuevo",                         (req, res) -> carreraController.showPlanForm(req, res), templateEngine);
+        post("/admin/carreras/:id/planes/nuevo",                        (req, res) -> carreraController.createPlan(req, res));
+        get("/admin/carreras/:id/planes/:planId/editar",                (req, res) -> carreraController.showEditPlanForm(req, res), templateEngine);
+        post("/admin/carreras/:id/planes/:planId/editar",               (req, res) -> carreraController.updatePlan(req, res));
+        post("/admin/carreras/:id/planes/:planId/activar",              (req, res) -> carreraController.activarPlan(req, res));
+        post("/admin/carreras/:id/planes/:planId/desactivar",           (req, res) -> carreraController.desactivarPlan(req, res));
+
+        // ========================================
+        // RUTAS: GESTIÓN DE MATERIAS (B.2)
+        // ========================================
+        get("/admin/materias",                                                   (req, res) -> materiaController.listMaterias(req, res), templateEngine);
+        get("/admin/materias/nueva",                                             (req, res) -> materiaController.showMateriaForm(req, res), templateEngine);
+        post("/admin/materias/nueva",                                            (req, res) -> materiaController.createMateria(req, res));
+        get("/admin/materias/:id",                                               (req, res) -> materiaController.showMateriaDetalle(req, res), templateEngine);
+        get("/admin/materias/:id/editar",                                        (req, res) -> materiaController.showEditMateriaForm(req, res), templateEngine);
+        post("/admin/materias/:id/editar",                                       (req, res) -> materiaController.updateMateria(req, res));
+        post("/admin/materias/:id/desactivar",                                   (req, res) -> materiaController.desactivarMateria(req, res));
+        post("/admin/materias/:id/reactivar",                                    (req, res) -> materiaController.reactivarMateria(req, res));
+        get("/admin/materias/:id/planes/nueva",                                  (req, res) -> materiaController.showAsociarPlanForm(req, res), templateEngine);
+        post("/admin/materias/:id/planes/nueva",                                 (req, res) -> materiaController.asociarPlan(req, res));
+        get("/admin/materias/:id/planes/:mpId/editar",                           (req, res) -> materiaController.showEditAsociacionForm(req, res), templateEngine);
+        post("/admin/materias/:id/planes/:mpId/editar",                          (req, res) -> materiaController.updateAsociacion(req, res));
+        post("/admin/materias/:id/planes/:mpId/desactivar",                      (req, res) -> materiaController.desactivarAsociacion(req, res));
+
+        // ========================================
+        // RUTAS: PERÍODOS LECTIVOS (B.1 ext.)
+        // ========================================
+        get("/admin/periodos",                            (req, res) -> periodoController.listPeriodos(req, res), templateEngine);
+        get("/admin/periodos/nuevo",                      (req, res) -> periodoController.showPeriodoForm(req, res), templateEngine);
+        post("/admin/periodos/nuevo",                     (req, res) -> periodoController.createPeriodo(req, res));
+        post("/admin/periodos/:id/activar",               (req, res) -> periodoController.activarPeriodo(req, res));
+        post("/admin/periodos/:id/desactivar",            (req, res) -> periodoController.desactivarPeriodo(req, res));
+
+        // ========================================
+        // RUTAS: COMISIONES (C.1) + ASIGNACIONES (D.1)
+        // ========================================
+        get("/admin/comisiones",                                                      (req, res) -> comisionController.listComisiones(req, res), templateEngine);
+        get("/admin/comisiones/nueva",                                                (req, res) -> comisionController.showComisionForm(req, res), templateEngine);
+        post("/admin/comisiones/nueva",                                               (req, res) -> comisionController.createComision(req, res));
+        get("/admin/comisiones/:id",                                                  (req, res) -> comisionController.showComisionDetalle(req, res), templateEngine);
+        post("/admin/comisiones/:id/cerrar",                                          (req, res) -> comisionController.cerrarComision(req, res));
+        get("/admin/comisiones/:id/asignaciones/nueva",                               (req, res) -> comisionController.showAsignacionForm(req, res), templateEngine);
+        post("/admin/comisiones/:id/asignaciones/nueva",                              (req, res) -> comisionController.createAsignacion(req, res));
+        get("/admin/comisiones/:id/asignaciones/:asId/cargo",                         (req, res) -> comisionController.showCambiarCargoForm(req, res), templateEngine);
+        post("/admin/comisiones/:id/asignaciones/:asId/cargo",                        (req, res) -> comisionController.cambiarCargo(req, res));
+        post("/admin/comisiones/:id/asignaciones/:asId/baja",                         (req, res) -> comisionController.bajaAsignacion(req, res));
+
+        // ========================================
+        // RUTAS: DOCENTE — MIS COMISIONES (D.1 Flujo 5.4)
+        // ========================================
+        get("/docente/comisiones",  (req, res) -> docenteController.showMisComisiones(req, res), templateEngine);
+
+        // ========================================
         // APLICAR MIDDLEWARE DE PROTECCIÓN
         // ========================================
 
@@ -125,6 +195,15 @@ public class Routes {
         // Administrador requiere rol ADMINISTRADOR (si se mantiene el rol)
         before("/admin", AuthMiddleware.requireRole("ADMINISTRADOR"));
         before("/api/admin/*", AuthMiddleware.requireRole("ADMINISTRADOR"));
+        before("/admin/carreras", AuthMiddleware.requireRole("ADMINISTRADOR"));
+        before("/admin/carreras/*", AuthMiddleware.requireRole("ADMINISTRADOR"));
+        before("/admin/materias", AuthMiddleware.requireRole("ADMINISTRADOR"));
+        before("/admin/materias/*", AuthMiddleware.requireRole("ADMINISTRADOR"));
+        before("/admin/periodos", AuthMiddleware.requireRole("ADMINISTRADOR"));
+        before("/admin/periodos/*", AuthMiddleware.requireRole("ADMINISTRADOR"));
+        before("/admin/comisiones", AuthMiddleware.requireRole("ADMINISTRADOR"));
+        before("/admin/comisiones/*", AuthMiddleware.requireRole("ADMINISTRADOR"));
+        before("/docente/comisiones", AuthMiddleware.requireRole("DOCENTE"));
 
         // ========================================
         // MANEJADORES DE ERRORES

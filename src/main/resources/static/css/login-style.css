@@ -509,10 +509,4 @@ body::before {
   border-color: #eee;
 }
 
-body {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100vh;
-  margin: 0;
-}
+/* body centering handled per-page via .home class */

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Períodos Lectivos</title>
+    <link rel="stylesheet" href="/css/login-style.css">
+    <link rel="stylesheet" href="https://unicons.iconscout.com/release/v4.0.0/css/line.css">
+    <link rel="stylesheet" href="/css/style-dashboard.css">
+    <style>
+        .badge-activo   { background:#d1fae5;color:#065f46;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600; }
+        .badge-inactivo { background:#f1f5f9;color:#6b7280;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600; }
+        .btn { padding:7px 16px;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;border:none;display:inline-block;text-decoration:none; }
+        .btn-primary  { background:#2563eb;color:#fff; }
+        .btn-success  { background:#059669;color:#fff; }
+        .btn-warning  { background:#d97706;color:#fff; }
+    </style>
+</head>
+<body>
+<div class="admin-container">
+
+    <div class="admin-header">
+        <div class="header-left">
+            <div class="header-icon"><i class="uil uil-calender"></i></div>
+            <div>
+                <h1>Períodos Lectivos</h1>
+                <span class="role-badge">Módulo B.1 — Gestión Académica</span>
+            </div>
+        </div>
+        <div class="user-info">
+            <div class="email">{{email}}</div>
+            <a href="/admin" class="logout-btn">← Panel</a>
+        </div>
+    </div>
+
+    {{#successMessage}}
+    <div style="background:#d1fae5;color:#065f46;padding:12px 18px;border-radius:8px;margin-bottom:16px;">{{successMessage}}</div>
+    {{/successMessage}}
+    {{#errorMessage}}
+    <div style="background:#fee2e2;color:#991b1b;padding:12px 18px;border-radius:8px;margin-bottom:16px;">{{errorMessage}}</div>
+    {{/errorMessage}}
+
+    <div class="admin-section">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+            <p class="section-title" style="margin:0;">Períodos registrados</p>
+            <a href="/admin/periodos/nuevo" class="btn btn-primary">+ Nuevo Período</a>
+        </div>
+
+        <table class="styled-table" style="width:100%;border-collapse:collapse;">
+            <thead>
+                <tr>
+                    <th style="text-align:left;padding:10px 14px;background:#f1f5f9;border-bottom:2px solid #e2e8f0;">Período</th>
+                    <th style="text-align:left;padding:10px 14px;background:#f1f5f9;border-bottom:2px solid #e2e8f0;">Descripción</th>
+                    <th style="text-align:left;padding:10px 14px;background:#f1f5f9;border-bottom:2px solid #e2e8f0;">Estado</th>
+                    <th style="text-align:left;padding:10px 14px;background:#f1f5f9;border-bottom:2px solid #e2e8f0;">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#periodos}}
+                <tr style="border-bottom:1px solid #f1f5f9;">
+                    <td style="padding:10px 14px;font-weight:600;">{{label}}</td>
+                    <td style="padding:10px 14px;color:#6b7280;font-size:13px;">{{#descripcion}}{{descripcion}}{{/descripcion}}{{^descripcion}}—{{/descripcion}}</td>
+                    <td style="padding:10px 14px;">
+                        {{#activo}}<span class="badge-activo">Activo</span>{{/activo}}
+                        {{^activo}}<span class="badge-inactivo">Inactivo</span>{{/activo}}
+                    </td>
+                    <td style="padding:10px 14px;display:flex;gap:6px;">
+                        {{^activo}}
+                        <form action="/admin/periodos/{{id}}/activar" method="post" style="display:inline;">
+                            <button type="submit" class="btn btn-success"
+                                onclick="return confirm('¿Activar este período? Se desactivará el período activo actual.')">Activar</button>
+                        </form>
+                        {{/activo}}
+                        {{#activo}}
+                        <form action="/admin/periodos/{{id}}/desactivar" method="post" style="display:inline;">
+                            <button type="submit" class="btn btn-warning"
+                                onclick="return confirm('¿Desactivar este período? Quedará sin período activo.')">Desactivar</button>
+                        </form>
+                        {{/activo}}
+                    </td>
+                </tr>
+                {{/periodos}}
+            </tbody>
+        </table>
+
+        {{^periodos}}
+        <div style="text-align:center;padding:40px;color:#6b7280;">
+            No hay períodos registrados. <a href="/admin/periodos/nuevo" style="color:#2563eb;">Crear el primero</a>.
+        </div>
+        {{/periodos}}
+    </div>
+</div>
+</body>
+</html>

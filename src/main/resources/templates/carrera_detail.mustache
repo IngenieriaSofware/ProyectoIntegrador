@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{nombre}} — Detalle</title>
+    <link rel="stylesheet" href="/css/login-style.css">
+    <link rel="stylesheet" href="https://unicons.iconscout.com/release/v4.0.0/css/line.css">
+    <link rel="stylesheet" href="/css/style-dashboard.css">
+    <style>
+        .badge-activo   { background:#d1fae5;color:#065f46;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600; }
+        .badge-inactivo { background:#fee2e2;color:#991b1b;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600; }
+        .btn { padding:7px 16px;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;border:none;display:inline-block;text-decoration:none; }
+        .btn-primary   { background:#2563eb;color:#fff; }
+        .btn-success   { background:#059669;color:#fff; }
+        .btn-warning   { background:#d97706;color:#fff; }
+        .btn-danger    { background:#dc2626;color:#fff; }
+        .btn-secondary { background:#f1f5f9;color:#374151;border:1px solid #e2e8f0; }
+        .info-row  { display:flex;gap:8px;margin-bottom:8px;font-size:14px; }
+        .info-label{ font-weight:600;color:#374151;min-width:120px; }
+        .info-val  { color:#6b7280; }
+        .warn-box  { background:#fffbeb;border:1px solid #fbbf24;color:#92400e;padding:10px 14px;border-radius:8px;margin-bottom:14px;font-size:13px; }
+        .info-box  { background:#eff6ff;border:1px solid #bfdbfe;color:#1e40af;padding:10px 14px;border-radius:8px;margin-bottom:12px;font-size:13px; }
+        table.planes { width:100%;border-collapse:collapse;margin-top:12px; }
+        table.planes th { text-align:left;padding:9px 14px;background:#f8fafc;border-bottom:2px solid #e2e8f0;font-size:13px; }
+        table.planes td { padding:9px 14px;border-bottom:1px solid #f1f5f9;font-size:13px;vertical-align:middle; }
+        .actions-cell { display:flex;gap:6px;flex-wrap:wrap; }
+    </style>
+</head>
+<body>
+<div class="admin-container">
+
+    <div class="admin-header">
+        <div class="header-left">
+            <div class="header-icon"><i class="uil uil-graduation-cap"></i></div>
+            <div>
+                <h1>{{nombre}}</h1>
+                <span class="role-badge">Carrera · {{codigo}}</span>
+            </div>
+        </div>
+        <div class="user-info">
+            <div class="email">{{email}}</div>
+            <a href="/admin/carreras" class="logout-btn">← Volver</a>
+        </div>
+    </div>
+
+    {{#successMessage}}
+    <div style="background:#d1fae5;color:#065f46;padding:12px 18px;border-radius:8px;margin-bottom:16px;">{{successMessage}}</div>
+    {{/successMessage}}
+    {{#errorMessage}}
+    <div style="background:#fee2e2;color:#991b1b;padding:12px 18px;border-radius:8px;margin-bottom:16px;">{{errorMessage}}</div>
+    {{/errorMessage}}
+
+    {{#tieneMultiplesActivos}}
+    <div class="warn-box">
+        ⚠️ Esta carrera tiene más de un plan activo. Se recomienda desactivar los redundantes para evitar ambigüedades en inscripciones.
+    </div>
+    {{/tieneMultiplesActivos}}
+
+    {{#sinPlanActivo}}
+    <div class="info-box">
+        ℹ️ Esta carrera no tiene ningún plan activo. No se pueden realizar nuevas inscripciones.
+    </div>
+    {{/sinPlanActivo}}
+
+    <!-- Datos de la carrera -->
+    <div class="admin-section">
+        <p class="section-title">📋 Información</p>
+        <div class="info-row"><span class="info-label">Código:</span><span class="info-val">{{codigo}}</span></div>
+        <div class="info-row"><span class="info-label">Nombre:</span><span class="info-val">{{nombre}}</span></div>
+        <div class="info-row">
+            <span class="info-label">Descripción:</span>
+            <span class="info-val">{{#descripcion}}{{descripcion}}{{/descripcion}}{{^descripcion}}—{{/descripcion}}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Estado:</span>
+            <span class="info-val">
+                {{#activa}}<span class="badge-activo">Activa</span>{{/activa}}
+                {{^activa}}<span class="badge-inactivo">Inactiva</span>{{/activa}}
+            </span>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;">
+            <a href="/admin/carreras/{{id}}/editar" class="btn btn-primary">Editar</a>
+            {{#activa}}
+            <form action="/admin/carreras/{{id}}/baja" method="post" style="display:inline;">
+                <button type="submit" class="btn btn-danger" onclick="return confirm('¿Confirma dar de baja esta carrera? Los estudiantes conservarán su historial, pero no podrán realizarse nuevas inscripciones.')">
+                    Dar de baja
+                </button>
+            </form>
+            {{/activa}}
+        </div>
+    </div>
+
+    <!-- Planes de estudio -->
+    <div class="admin-section">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+            <p class="section-title" style="margin:0;">📅 Planes de Estudio</p>
+            {{#activa}}
+            <a href="/admin/carreras/{{id}}/planes/nuevo" class="btn btn-primary" style="font-size:13px;">+ Nuevo Plan</a>
+            {{/activa}}
+        </div>
+
+        <table class="planes">
+            <thead>
+                <tr>
+                    <th>Año vigencia</th>
+                    <th>Descripción</th>
+                    <th>Duración</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#planes}}
+                <tr>
+                    <td><strong>{{anioVigencia}}</strong></td>
+                    <td style="color:#6b7280;">{{#descripcion}}{{descripcion}}{{/descripcion}}{{^descripcion}}—{{/descripcion}}</td>
+                    <td style="color:#6b7280;">{{#duracionAnios}}{{duracionAnios}} año(s){{/duracionAnios}}{{^duracionAnios}}—{{/duracionAnios}}</td>
+                    <td>
+                        {{#activo}}<span class="badge-activo">Activo</span>{{/activo}}
+                        {{^activo}}<span class="badge-inactivo">Inactivo</span>{{/activo}}
+                    </td>
+                    <td>
+                        <div class="actions-cell">
+                            <a href="/admin/carreras/{{carreraId}}/planes/{{id}}/editar" class="btn btn-secondary">Editar</a>
+                            {{^activo}}
+                            <form action="/admin/carreras/{{carreraId}}/planes/{{id}}/activar" method="post" style="display:inline;">
+                                <button type="submit" class="btn btn-success"
+                                    onclick="return confirmarActivar({{anioVigencia}})">Activar</button>
+                            </form>
+                            {{/activo}}
+                            {{#activo}}
+                            <form action="/admin/carreras/{{carreraId}}/planes/{{id}}/desactivar" method="post" style="display:inline;">
+                                <button type="submit" class="btn btn-warning"
+                                    onclick="return confirm('¿Confirma desactivar el plan {{anioVigencia}}? Los estudiantes inscriptos conservarán su historial.')">Desactivar</button>
+                            </form>
+                            {{/activo}}
+                        </div>
+                    </td>
+                </tr>
+                {{/planes}}
+                {{^planes}}
+                <tr>
+                    <td colspan="5" style="text-align:center;padding:30px;color:#6b7280;">
+                        No hay planes de estudio.
+                        {{#activa}}<a href="/admin/carreras/{{id}}/planes/nuevo" style="color:#2563eb;">Crear el primero</a>.{{/activa}}
+                    </td>
+                </tr>
+                {{/planes}}
+            </tbody>
+        </table>
+    </div>
+
+</div>
+<script>
+function confirmarActivar(anio) {
+    var badges = document.querySelectorAll('.badge-activo');
+    if (badges.length > 0) {
+        return confirm('Atención: ya existe un plan activo en esta carrera. Activar el plan ' + anio + ' NO desactivará el anterior automáticamente.\n\n¿Desea continuar?');
+    }
+    return true;
+}
+</script>
+</body>
+</html>
