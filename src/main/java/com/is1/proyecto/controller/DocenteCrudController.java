@@ -45,7 +45,7 @@ public class DocenteCrudController {
             return null;
         }
 
-        return new ModelAndView(model, "professor_form.mustache");
+        return new ModelAndView(model, "persona_form.mustache");
     }
 
     public Object createProfessor(Request req, Response res) {
@@ -123,6 +123,6 @@ public class DocenteCrudController {
         }
         model.put("dashboardUrl", dashboardUrl);
 
-        return new ModelAndView(model, "professor_list.mustache");
+        return new ModelAndView(model, "persona_list.mustache");
     }
 }
