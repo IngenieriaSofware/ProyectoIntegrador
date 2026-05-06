@@ -57,9 +57,10 @@ public class App {
         // --- Filtro 'before': Abre conexión a BD ---
         before((req, res) -> {
             try {
+                // Cerrar conexión huérfana del hilo (puede quedar si halt() cortó un request anterior)
+                if (Base.hasConnection()) Base.close();
                 Base.open(dbConfig.getDriver(), dbConfig.getDbUrl(), dbConfig.getUser(), dbConfig.getPass());
                 System.out.println("[REQUEST] " + req.requestMethod() + " " + req.url());
-                System.out.println("[DB] url=" + dbConfig.getDbUrl());
             } catch (Exception e) {
                 System.err.println("Error al abrir conexión con BD: " + e.getMessage());
                 halt(500, "{\"error\": \"Error al conectar a la base de datos\"}");
