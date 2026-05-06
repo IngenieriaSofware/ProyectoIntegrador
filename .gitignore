@@ -31,3 +31,6 @@ replay_pid*
 
 # Archivo de DB erróneo en la raíz
 /dev.db
+
+# Carpeta de base de datos
+/db/
