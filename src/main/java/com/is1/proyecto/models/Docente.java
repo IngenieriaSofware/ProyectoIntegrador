@@ -10,7 +10,7 @@ import org.javalite.activejdbc.annotations.Table;
  * Referencia a Persona mediante persona_id.
  */
 @Table("docentes")
-public class Professor extends Model {
+public class Docente extends Model {
 
     public int getPersonaId() {
         return getInteger("persona_id");
@@ -58,8 +58,8 @@ public class Professor extends Model {
     /**
      * Busca un profesor por persona_id
      */
-    public static Optional<Professor> findByPersonaId(int personaId) {
-        Professor professor = Professor.findFirst("persona_id = ?", personaId);
+    public static Optional<Docente> findByPersonaId(int personaId) {
+        Docente professor = Docente.findFirst("persona_id = ?", personaId);
         return Optional.ofNullable(professor);
     }
 }

@@ -1,9 +1,5 @@
 package com.is1.proyecto.controller;
 
-import com.is1.proyecto.service.ProfessorService;
-import spark.Request;
-import spark.Response;
-import spark.ModelAndView;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -11,21 +7,24 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.is1.proyecto.service.DocenteService;
+
+import spark.ModelAndView;
+import spark.Request;
+import spark.Response;
+
 /**
- * Controlador para manejar las rutas relacionadas con profesores.
- * Delega la lógica de negocio al ProfessorService.
+ * Controlador para CRUD de Docentes.
+ * Delega la lógica de negocio al DocenteService.
  */
-public class ProfessorController {
+public class DocenteCrudController {
 
-    private ProfessorService professorService;
+    private DocenteService docenteService;
 
-    public ProfessorController() {
-        this.professorService = new ProfessorService();
+    public DocenteCrudController() {
+        this.docenteService = new DocenteService();
     }
 
-    /**
-     * GET /professor/new - Muestra el formulario de creación de profesor
-     */
     public ModelAndView showCreateForm(Request req, Response res) {
         Map<String, Object> model = new HashMap<>();
 
@@ -49,9 +48,6 @@ public class ProfessorController {
         return new ModelAndView(model, "professor_form.mustache");
     }
 
-    /**
-     * POST /professor/new - Procesa la creación de un nuevo profesor
-     */
     public Object createProfessor(Request req, Response res) {
         String name = req.queryParams("name");
         String email = req.queryParams("email");
@@ -60,7 +56,7 @@ public class ProfessorController {
         String phone = req.queryParams("phone");
 
         // Usar el servicio para crear el profesor
-        Map<String, Object> result = professorService.createProfessor(name, email, dni, department, phone);
+        Map<String, Object> result = docenteService.createProfessor(name, email, dni, department, phone);
 
         if ((Boolean) result.get("success")) {
             String message = (String) result.get("message");
@@ -75,9 +71,6 @@ public class ProfessorController {
         return null;
     }
 
-    /**
-     * GET /professor/list - Muestra el listado paginado de profesores
-     */
     public ModelAndView listProfessors(Request req, Response res) {
         // Definir tamaño de página
         final int PAGE_SIZE = 5;
@@ -93,7 +86,7 @@ public class ProfessorController {
         }
 
         // Usar el servicio para obtener la lista paginada
-        Map<String, Object> pagedResult = professorService.getProfessorsPagedList(currentPage, PAGE_SIZE);
+        Map<String, Object> pagedResult = docenteService.getProfessorsPagedList(currentPage, PAGE_SIZE);
 
         // Preparar el modelo para Mustache
         Map<String, Object> model = new HashMap<>();
@@ -122,6 +115,13 @@ public class ProfessorController {
             model.put("hasNext", true);
             model.put("nextPage", currentPage + 1);
         }
+
+        List<String> sessionRoles = (List<String>) req.session().attribute("roles");
+        String dashboardUrl = "/docente"; // default
+        if (sessionRoles != null && sessionRoles.contains("ADMINISTRADOR")) {
+            dashboardUrl = "/admin";
+        }
+        model.put("dashboardUrl", dashboardUrl);
 
         return new ModelAndView(model, "professor_list.mustache");
     }

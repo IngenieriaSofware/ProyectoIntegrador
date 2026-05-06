@@ -28,6 +28,9 @@
             </goals>
           </execution>
         </executions>
+        <configuration>
+          <outputDirectory>${project.build.outputDirectory}</outputDirectory>
+        </configuration>
       </plugin>
       <plugin>
         <artifactId>maven-shade-plugin</artifactId>

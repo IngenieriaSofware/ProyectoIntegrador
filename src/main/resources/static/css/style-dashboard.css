@@ -1,0 +1,303 @@
+/* ============================================
+   style-dashboard.css — Estilos de dashboards
+   Usar en: admin, docente, estudiante
+   ============================================ */
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+    background: #f0f2f5;
+    font-family: 'Segoe UI', sans-serif;
+    color: #1a1a2e;
+}
+
+/* ── CONTENEDORES ── */
+.admin-container,
+.dashboard-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 24px 20px;
+}
+
+/* ── HEADER GLASS ── */
+.dashboard-header,
+.admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 28px;
+    margin-bottom: 24px;
+    border-radius: 14px;
+    background: rgba(255,255,255,0.18);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255,255,255,0.35);
+    box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.header-icon {
+    width: 46px;
+    height: 46px;
+    border-radius: 12px;
+    background: rgba(37,99,235,0.10);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    color: #2563eb;
+}
+
+.header-left h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #1a1a2e;
+    letter-spacing: -0.3px;
+}
+
+.role-badge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    background: #dbeafe;
+    color: #1e40af;
+    padding: 3px 10px;
+    border-radius: 20px;
+    margin-top: 3px;
+    letter-spacing: 0.03em;
+}
+
+.user-info { text-align: right; }
+.user-info .email { font-size: 14px; font-weight: 600; color: #1a1a2e; }
+.user-info .role-text { font-size: 12px; color: #6b7280; margin-top: 2px; }
+
+.logout-btn {
+    display: inline-block;
+    margin-top: 8px;
+    padding: 6px 14px;
+    font-size: 12px;
+    font-weight: 500;
+    background: #fff0f0;
+    color: #dc2626;
+    border: 1px solid #fca5a5;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: background 0.2s;
+}
+.logout-btn:hover { background: #fee2e2; }
+
+/* ── SECCIONES ── */
+.dashboard-section,
+.admin-section {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    padding: 22px 24px;
+    margin-bottom: 18px;
+}
+
+.section-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+/* ── ACTION CARDS ── */
+.actions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+}
+
+.action-card {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 18px 16px;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    text-decoration: none;
+    color: #1a1a2e;
+    transition: transform 0.18s, box-shadow 0.18s, border-color 0.18s;
+}
+
+.action-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+    border-color: #93c5fd;
+    color: #1a1a2e;
+}
+
+.action-card i {
+    font-size: 26px;
+    color: #2563eb;
+    margin-bottom: 10px;
+}
+
+.card-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 4px;
+}
+
+.card-desc {
+    font-size: 11px;
+    color: #9ca3af;
+    line-height: 1.4;
+}
+
+/* Logout card - acento rojo */
+.action-card.logout-card i { color: #dc2626; }
+.action-card.logout-card:hover { border-color: #fca5a5; }
+
+/* ── STATS (admin) ── */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 14px;
+    margin-bottom: 24px;
+}
+
+.stat-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 18px 20px;
+    border: 1px solid #e5e7eb;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.stat-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    background: #eff6ff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    color: #2563eb;
+    flex-shrink: 0;
+}
+
+.stat-info h3 {
+    font-size: 11px;
+    font-weight: 500;
+    color: #9ca3af;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 2px;
+}
+
+.stat-value {
+    font-size: 26px;
+    font-weight: 700;
+    color: #111827;
+    line-height: 1;
+}
+
+/* ── SEARCH BOX (admin) ── */
+.search-box {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.search-box input {
+    flex: 1;
+    padding: 10px 14px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 14px;
+    background: #f9fafb;
+    color: #111827;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.search-box input:focus { border-color: #93c5fd; }
+
+.search-box button {
+    padding: 10px 20px;
+    background: #2563eb;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.search-box button:hover { background: #1d4ed8; }
+
+/* ── USUARIO ITEMS (admin) ── */
+.usuario-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 16px;
+    border: 1px solid #f3f4f6;
+    border-radius: 10px;
+    margin-bottom: 8px;
+    background: #fafafa;
+}
+
+.usuario-name { font-weight: 600; font-size: 14px; color: #111827; margin-bottom: 3px; }
+.usuario-email { color: #6b7280; font-size: 13px; }
+.usuario-roles { display: flex; gap: 5px; margin-top: 5px; }
+
+.role-pill {
+    background: #eff6ff;
+    color: #1d4ed8;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 500;
+}
+
+.usuario-actions { display: flex; gap: 6px; }
+
+.btn-small {
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 500;
+    border: none;
+    border-radius: 7px;
+    cursor: pointer;
+}
+
+.btn-info    { background: #e0f2fe; color: #0369a1; }
+.btn-warning { background: #fef9c3; color: #92400e; }
+.btn-danger  { background: #fee2e2; color: #b91c1c; }
+.btn-info:hover    { background: #bae6fd; }
+.btn-warning:hover { background: #fde68a; }
+.btn-danger:hover  { background: #fecaca; }
+
+.empty-state {
+    text-align: center;
+    color: #9ca3af;
+    padding: 36px 20px;
+    font-size: 14px;
+}
+
+/* ── INFO / AUDITORÍA (admin) ── */
+.info-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+.info-list li { font-size: 14px; color: #374151; line-height: 1.5; }
+.info-list li strong { color: #111827; }
+
+.audit-text { font-size: 14px; color: #374151; line-height: 1.6; }
+.audit-sub  { font-size: 13px; color: #9ca3af; margin-top: 6px; }

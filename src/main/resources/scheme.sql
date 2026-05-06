@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS personas (
 -- Tabla de relación N:N: PERSONA_ROLES (Soporta roles duales)
 CREATE TABLE IF NOT EXISTS persona_roles (
     persona_id INTEGER NOT NULL,
-    rol TEXT NOT NULL CHECK(rol IN ('DOCENTE', 'ESTUDIANTE')),
+    rol TEXT NOT NULL CHECK(rol IN ('DOCENTE', 'ESTUDIANTE', 'ADMINISTRADOR')),
     assigned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (persona_id, rol),
     FOREIGN KEY (persona_id) REFERENCES personas(id) ON DELETE CASCADE
@@ -86,6 +86,16 @@ CREATE TABLE IF NOT EXISTS docentes (
     FOREIGN KEY (cargo_id) REFERENCES tcargo(id)
 );
 
+-- Tabla: ADMINISTRADORES (Perfil académico del administrador)
+CREATE TABLE IF NOT EXISTS administradores (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    persona_id INTEGER NOT NULL UNIQUE,        -- FK a personas (1:1)
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (persona_id) REFERENCES personas(id) ON DELETE CASCADE
+
+);
+
 -- ========================================
 -- TABLAS DE PERMISOS (Gestión de accesos dinámicos)
 -- ========================================
@@ -115,11 +125,25 @@ INSERT OR IGNORE INTO permisos (nombre, descripcion, categoria) VALUES
     ('ver_reportes', 'Visualizar reportes académicos', 'admin'),
     ('gestionar_calificaciones', 'Registrar y editar calificaciones', 'docente'),
     ('ver_estudiantes_catedra', 'Ver estudiantes inscritos en la cátedra', 'docente'),
-    ('crear_evaluaciones', 'Crear evaluaciones', 'docente');
+    ('crear_evaluaciones', 'Crear evaluaciones', 'docente'),
+    ('gestionar_administradores', 'Crear, editar, eliminar administradores', 'admin');
 
 -- ========================================
--- LEGACY: Tabla 'users' (deprecated, mantener para compatibilidad temporal)
+-- TABLA DE AUDITORÍA
 -- ========================================
--- NOTA: Esta tabla será eliminada una vez que la migración sea completa.
--- Actualmente no se usa en el nuevo flujo de login.
+
+-- Tabla: AUDIT_LOGS (Registro de acciones de administrador)
+CREATE TABLE IF NOT EXISTS audit_logs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    admin_id INTEGER NOT NULL,
+    accion TEXT NOT NULL,                      -- Ej: "ASSIGN_ROLE", "DISABLE_USER", "VIEW_USER"
+    target_id INTEGER,                         -- ID de la persona afectada (nullable)
+    detalles TEXT,                             -- Detalles adicionales
+    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (admin_id) REFERENCES personas(id) ON DELETE CASCADE
+);
+
+-- Agregar campos de auditoría a personas (para ban)
+ALTER TABLE personas ADD COLUMN enabled INTEGER DEFAULT 1;
+ALTER TABLE personas ADD COLUMN ban_reason TEXT;
 

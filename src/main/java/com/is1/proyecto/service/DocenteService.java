@@ -1,15 +1,16 @@
 package com.is1.proyecto.service;
 
-import com.is1.proyecto.models.Professor;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import com.is1.proyecto.models.Docente;
 
 /**
  * Capa de servicio para la lógica relacionada con profesores.
  * Maneja la creación, listado y validación de profesores.
  */
-public class ProfessorService {
+public class DocenteService {
 
     /**
      * Crea un nuevo profesor en la base de datos.
@@ -33,7 +34,7 @@ public class ProfessorService {
         }
 
         try {
-            Professor professor = new Professor();
+            Docente professor = new Docente();
             professor.set("name", name);
             professor.set("email", email);
             professor.set("DNI", dni);
@@ -82,7 +83,7 @@ public class ProfessorService {
             }
 
             // Obtener el total de profesores
-            long totalCount = Professor.count();
+            long totalCount = Docente.count();
             int totalPages = (int) Math.ceil((double) totalCount / pageSize);
 
             // Validar que la página no exceda el total
@@ -94,7 +95,7 @@ public class ProfessorService {
             int offset = (pageNumber - 1) * pageSize;
 
             // Obtener profesores de esta página
-            List<Map<String, Object>> professors = Professor.findAll()
+            List<Map<String, Object>> professors = Docente.findAll()
                     .limit(pageSize)
                     .offset(offset)
                     .toMaps();
@@ -122,7 +123,7 @@ public class ProfessorService {
      * @param id ID del profesor
      * @return El profesor encontrado o null si no existe
      */
-    public Professor getProfessorById(long id) {
-        return Professor.findById(id);
+    public Docente getProfessorById(long id) {
+        return Docente.findById(id);
     }
 }

@@ -37,33 +37,37 @@ public class MainController {
      * GET /dashboard - Dashboard con selector de rol si hay múltiples
      */
     public ModelAndView showDashboard(Request req, Response res) {
-        Map<String, Object> model = new HashMap<>();
-
         @SuppressWarnings("unchecked")
         List<String> roles = (List<String>) req.session().attribute("roles");
         String email = req.session().attribute("email");
-        Integer personaId = (Integer) req.session().attribute("personaId");
 
         if (email == null || roles == null || roles.isEmpty()) {
             res.redirect("/?error=Sesion inválida");
             return null;
         }
 
-        // Si tiene múltiples roles, mostrar selector
+        // Si tiene múltiples roles, redirigir al primero
         if (roles.size() > 1) {
-            model.put("email", email);
-            model.put("personaId", personaId);
-            model.put("roles", roles);
-            model.put("multipleRoles", true);
-            return new ModelAndView(model, "dashboard.mustache");
+            if (roles.contains("ADMINISTRADOR")) {
+                res.redirect("/admin");
+            } else if (roles.contains("DOCENTE")) {
+                res.redirect("/docente");
+            } else if (roles.contains("ESTUDIANTE")) {
+                res.redirect("/estudiante");
+            } else {
+                res.redirect("/?error=Rol desconocido");
+            }
+            return null;
         }
 
-        // Si tiene solo 1 rol, redirigir directamente (no debería llegar aquí)
+        // Si tiene solo 1 rol, redirigir directamente
         String rol = roles.get(0);
         if ("DOCENTE".equals(rol)) {
             res.redirect("/docente");
         } else if ("ESTUDIANTE".equals(rol)) {
             res.redirect("/estudiante");
+        } else if ("ADMINISTRADOR".equals(rol)) {
+            res.redirect("/admin");
         } else {
             res.redirect("/?error=Rol desconocido");
         }

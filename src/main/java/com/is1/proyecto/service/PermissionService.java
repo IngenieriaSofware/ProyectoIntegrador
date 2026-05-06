@@ -7,12 +7,9 @@ import com.is1.proyecto.models.Persona;
 
 /**
  * Servicio de permisos - Gestión de accesos basada en:
- * 1. Roles dinámicos (DOCENTE, ESTUDIANTE) asignados a Persona
+ * 1. Roles dinámicos (DOCENTE, ESTUDIANTE, ADMINISTRADOR ) asignados a Persona
  * 2. Permisos específicos asignados a Persona
  * 
- * NOTA: El rol "ADMIN" ha sido eliminado. Las funciones de gestión
- * que antes requerían ADMIN ahora dependen de permisos específicos
- * (ej: "gestionar_estudiantes", "gestionar_docentes").
  */
 public class PermissionService {
 
@@ -36,6 +33,13 @@ public class PermissionService {
      */
     public static boolean isEstudiante(Persona persona) {
         return hasRole(persona, "ESTUDIANTE");
+    }
+
+    /**
+     * Verifica si una persona es ADMINISTRADOR
+    */
+    public static boolean isAdministrador(Persona persona) {
+        return hasRole(persona, "ADMINISTRADOR");
     }
 
     /**
@@ -138,6 +142,6 @@ public class PermissionService {
      * Valida si un rol es válido en el nuevo esquema
      */
     public static boolean isValidRole(String rol) {
-        return "DOCENTE".equals(rol) || "ESTUDIANTE".equals(rol);
+        return "DOCENTE".equals(rol) || "ESTUDIANTE".equals(rol) || "ADMINISTRADOR".equals(rol);
     }
 }

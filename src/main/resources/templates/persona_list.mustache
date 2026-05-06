@@ -3,16 +3,14 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Lista de Profesores</title>
-    
+    <title>Lista de Docentes</title>
     <link rel="stylesheet" href="/css/login-style.css" />
 </head>
 <body>
-
     <section class="home">
         <div class="form_container form_container--wide">
             <div class="form login_form">
-                <h2>Lista de Profesores</h2>
+                <h2>Lista de Docentes</h2>
 
                 <table class="styled-table">
                     <thead>
@@ -39,38 +37,36 @@
 
                 {{^professors}}
                     <p class="empty-list-message">
-                        No hay profesores registrados todavía.
+                        No hay docentes registrados todavía.
                     </p>
                 {{/professors}}
 
                 <div class="button-container">
-                    <a href="/dashboard" class="button-secondary">
-                        Volver al Panel
-                    </a>
-                    <a href="/professor/new" class="button-primary">
-                        Agregar Profesor
+                    <a href="{{dashboardUrl}}" class="button-secondary">
+                        ← Volver al panel
                     </a>
                 </div>
 
                 <div class="pagination">
-                    <a href="/professor/list?page={{previousPage}}" 
+                    <a href="/docente/list?page={{previousPage}}"
                        class="{{^hasPrevious}}disabled{{/hasPrevious}}">
                        &laquo; Anterior
                     </a>
 
                     {{#pages}}
-                        <a href="/professor/list?page={{number}}" 
+                        <a href="/docente/list?page={{number}}"
                            class="{{#isCurrent}}active{{/isCurrent}}">
                            {{number}}
                         </a>
                     {{/pages}}
 
-                    <a href="/professor/list?page={{nextPage}}" 
+                    <a href="/docente/list?page={{nextPage}}"
                        class="{{^hasNext}}disabled{{/hasNext}}">
                        Siguiente &raquo;
                     </a>
                 </div>
-                </div>
+
+            </div>
         </div>
     </section>
 </body>

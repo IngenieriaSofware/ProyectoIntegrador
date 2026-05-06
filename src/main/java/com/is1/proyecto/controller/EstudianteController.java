@@ -31,6 +31,6 @@ public class EstudianteController {
         model.put("roles", roles);
         model.put("isEstudiante", true);
 
-        return new ModelAndView(model, "dashboard.mustache");
+        return new ModelAndView(model, "estudiante_dashboard.mustache");
     }
 }

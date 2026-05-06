@@ -3,7 +3,10 @@ package com.is1.proyecto.config;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.is1.proyecto.controller.AdministradorController;
 import com.is1.proyecto.controller.DocenteController;
+import com.is1.proyecto.controller.DocenteCrudController;
+import com.is1.proyecto.controller.EnConstruccionController;
 import com.is1.proyecto.controller.EstudianteController;
 import com.is1.proyecto.controller.MainController;
 import com.is1.proyecto.controller.UserController;
@@ -34,8 +37,10 @@ public class Routes {
         MainController mainController = new MainController();
         UserController userController = new UserController();
         DocenteController docenteController = new DocenteController();
+        DocenteCrudController docenteCrudController = new DocenteCrudController();
         EstudianteController estudianteController = new EstudianteController();
-
+        AdministradorController administradorController = new AdministradorController();
+        EnConstruccionController enConstruccionController = new EnConstruccionController();
         // ========================================
         // RUTAS DE AUTENTICACIÓN (sin protección)
         // ========================================
@@ -69,12 +74,40 @@ public class Routes {
         // GET /docente - Dashboard de Docente
         get("/docente", (req, res) -> docenteController.showDocenteDashboard(req, res), templateEngine);
 
+        // CRUD de Docentes
+        get("/docente/new", (req, res) -> docenteCrudController.showCreateForm(req, res), templateEngine);
+        post("/docente/new", (req, res) -> docenteCrudController.createProfessor(req, res));
+        get("/docente/list", (req, res) -> docenteCrudController.listProfessors(req, res), templateEngine);
+
         // ========================================
         // RUTAS PROTEGIDAS: ESTUDIANTE
         // ========================================
 
         // GET /estudiante - Dashboard de Estudiante
         get("/estudiante", (req, res) -> estudianteController.showEstudianteDashboard(req, res), templateEngine);
+
+        // ========================================
+        // RUTAS PROTEGIDAS: ADMINISTRADOR (si se mantiene el rol)
+        // GET /admin - Dashboard de Administrador
+        get("/admin", (req, res) -> administradorController.showAdministradorDashboard(req, res), templateEngine);
+
+        // CRUD de Personas (Usuarios)
+        get("/persona/new",  (req, res) -> administradorController.showPersonaForm(req, res), templateEngine);
+        post("/persona/new", (req, res) -> administradorController.createPersona(req, res));
+        before("/persona/new", AuthMiddleware.requireRole("ADMINISTRADOR"));
+
+        // API - Gestión de Usuarios
+        get("/api/admin/usuarios", (req, res) -> administradorController.listUsuarios(req, res));
+        get("/api/admin/usuarios/search", (req, res) -> administradorController.searchUsuarios(req, res));
+        get("/api/admin/usuarios/:id", (req, res) -> administradorController.getUsuarioDetails(req, res));
+        post("/api/admin/usuarios/:id/role/assign", (req, res) -> administradorController.assignRole(req, res));
+        post("/api/admin/usuarios/:id/role/revoke", (req, res) -> administradorController.revokeRole(req, res));
+        post("/api/admin/usuarios/:id/disable", (req, res) -> administradorController.disableUser(req, res));
+        post("/api/admin/usuarios/:id/enable", (req, res) -> administradorController.enableUser(req, res));
+        post("/api/admin/usuarios/:id/password", (req, res) -> administradorController.changeUserPassword(req, res));
+
+        // GET /en_construccion - Vista en construcción
+        get("/en_construccion", (req, res) -> enConstruccionController.showEnConstruccion(req, res), templateEngine);
 
         // ========================================
         // APLICAR MIDDLEWARE DE PROTECCIÓN
@@ -88,6 +121,10 @@ public class Routes {
 
         // Estudiante requiere rol ESTUDIANTE
         before("/estudiante", AuthMiddleware.requireRole("ESTUDIANTE"));
+
+        // Administrador requiere rol ADMINISTRADOR (si se mantiene el rol)
+        before("/admin", AuthMiddleware.requireRole("ADMINISTRADOR"));
+        before("/api/admin/*", AuthMiddleware.requireRole("ADMINISTRADOR"));
 
         // ========================================
         // MANEJADORES DE ERRORES

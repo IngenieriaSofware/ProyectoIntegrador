@@ -6,10 +6,10 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
+import com.is1.proyecto.models.Docente;
+import com.is1.proyecto.models.Estudiante;
 import com.is1.proyecto.models.Persona;
 import com.is1.proyecto.models.PersonaRole;
-import com.is1.proyecto.models.Professor;
-import com.is1.proyecto.models.Student;
 
 /**
  * Servicio de usuarios - Gestiona registro y autenticación de Personas.
@@ -94,7 +94,7 @@ public class UserService {
         }
         if (!PermissionService.isValidRole(rolInicial)) {
             result.put("success", false);
-            result.put("message", "Rol inválido. Debe ser DOCENTE o ESTUDIANTE.");
+            result.put("message", "Rol inválido. Debe ser DOCENTE, ESTUDIANTE o ADMINISTRADOR.");
             return result;
         }
 
@@ -129,7 +129,7 @@ public class UserService {
 
             // Crear perfil académico según el rol
             if ("ESTUDIANTE".equals(rolInicial)) {
-                Student student = new Student();
+                Estudiante student = new Estudiante();
                 student.set("persona_id", persona.getId());
                 student.set("carrera", "Sin asignar");
                 student.set("plan_estudio", "Sin asignar");
@@ -137,10 +137,16 @@ public class UserService {
                 student.saveIt();
 
             } else if ("DOCENTE".equals(rolInicial)) {
-                Professor professor = new Professor();
+                Docente professor = new Docente();
                 professor.set("persona_id", persona.getId());
                 professor.set("cargo_id", 1); // 1 = Profesor Titular en tcargo
                 professor.saveIt();
+                
+            } else if ("ADMINISTRADOR".equals(rolInicial)) {
+                // Crear perfil de administrador
+                com.is1.proyecto.models.Administrador admin = new com.is1.proyecto.models.Administrador();
+                admin.set("persona_id", persona.getId());
+                admin.saveIt();
             }
 
             // Asignar rol inicial
@@ -209,6 +215,16 @@ public class UserService {
             }
 
             Persona persona = personaOpt.get();
+
+            // Verificar si el usuario está habilitado (no baneado)
+            Integer enabled = (Integer) persona.get("enabled");
+            if (enabled != null && enabled == 0) {
+                String banReason = persona.getString("ban_reason");
+                authService.recordFailedAttempt(identifier);
+                result.put("success", false);
+                result.put("message", "Cuenta deshabilitada. Razón: " + (banReason != null ? banReason : "Sin especificar"));
+                return result;
+            }
 
             // Verificar contraseña con Bcrypt
             if (!authService.verifyPassword(password, persona.getPassword())) {
@@ -290,6 +306,93 @@ public class UserService {
             System.err.println("Error al asignar rol: " + e.getMessage());
             result.put("success", false);
             result.put("message", "Error al asignar rol.");
+            return result;
+        }
+    }
+
+    public Map<String, Object> registerPersonaConRoles(String dni, String nombre, String apellido,
+                                                    String email, String password, String telefono,
+                                                    String localidad, List<String> roles) {
+        Map<String, Object> result = new HashMap<>();
+
+        // Validaciones básicas (igual que registerPersona)
+        if (dni == null || dni.trim().isEmpty()) {
+            result.put("success", false); result.put("message", "DNI es requerido."); return result;
+        }
+        if (nombre == null || nombre.trim().isEmpty()) {
+            result.put("success", false); result.put("message", "Nombre es requerido."); return result;
+        }
+        if (apellido == null || apellido.trim().isEmpty()) {
+            result.put("success", false); result.put("message", "Apellido es requerido."); return result;
+        }
+        if (email == null || email.trim().isEmpty()) {
+            result.put("success", false); result.put("message", "Email es requerido."); return result;
+        }
+        if (password == null || password.length() < 8 || password.length() > 30) {
+            result.put("success", false); result.put("message", "Contraseña inválida."); return result;
+        }
+        if (roles == null || roles.isEmpty()) {
+            result.put("success", false); result.put("message", "Debe asignar al menos un rol."); return result;
+        }
+        // Validar que los roles sean DOCENTE o ESTUDIANTE (no ADMINISTRADOR)
+        for (String rol : roles) {
+            if (!"DOCENTE".equals(rol) && !"ESTUDIANTE".equals(rol)) {
+                result.put("success", false);
+                result.put("message", "Rol inválido: " + rol + ". Solo se permite DOCENTE o ESTUDIANTE.");
+                return result;
+            }
+        }
+
+        try {
+            if (Persona.findByDni(dni).isPresent()) {
+                result.put("success", false); result.put("message", "DNI ya registrado."); return result;
+            }
+            if (Persona.findByEmail(email).isPresent()) {
+                result.put("success", false); result.put("message", "Email ya registrado."); return result;
+            }
+
+            // Crear Persona
+            Persona persona = new Persona();
+            persona.set("dni", dni);
+            persona.set("nombre", nombre);
+            persona.set("apellido", apellido);
+            persona.set("email", email);
+            persona.set("password", authService.hashPassword(password));
+            persona.set("telefono", telefono != null ? telefono : "");
+            persona.set("localidad", localidad != null ? localidad : "");
+            persona.saveIt();
+
+            // Crear perfiles y asignar roles
+            for (String rol : roles) {
+                if ("ESTUDIANTE".equals(rol)) {
+                    Estudiante student = new Estudiante();
+                    student.set("persona_id", persona.getId());
+                    student.set("carrera", "Sin asignar");
+                    student.set("plan_estudio", "Sin asignar");
+                    student.set("estado_id", 1);
+                    student.saveIt();
+                } else if ("DOCENTE".equals(rol)) {
+                    Docente professor = new Docente();
+                    professor.set("persona_id", persona.getId());
+                    professor.set("cargo_id", 1);
+                    professor.saveIt();
+                }
+
+                PersonaRole personaRole = new PersonaRole();
+                personaRole.set("persona_id", persona.getId());
+                personaRole.set("rol", rol);
+                personaRole.saveIt();
+            }
+
+            result.put("success", true);
+            result.put("message", "Persona registrada exitosamente.");
+            result.put("personaId", persona.getId());
+            return result;
+
+        } catch (Exception e) {
+            System.err.println("Error al registrar Persona: " + e.getMessage());
+            result.put("success", false);
+            result.put("message", "Error interno. Intente de nuevo.");
             return result;
         }
     }

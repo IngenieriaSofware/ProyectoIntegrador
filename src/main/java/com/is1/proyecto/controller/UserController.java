@@ -114,6 +114,8 @@ public class UserController {
                     res.redirect("/docente");
                 } else if ("ESTUDIANTE".equals(rol)) {
                     res.redirect("/estudiante");
+                } else if ("ADMINISTRADOR".equals(rol)) {
+                    res.redirect("/admin");
                 }
             } else if (roles.size() > 1) {
                 // Múltiples roles → mostrar selector
