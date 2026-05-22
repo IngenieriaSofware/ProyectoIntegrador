@@ -267,21 +267,20 @@ public class AdministradorController {
     }
 
     public ModelAndView showPersonaForm(Request req, Response res) {
-    List<String> roles = (List<String>) req.session().attribute("roles");
-    if (roles == null || !roles.contains("ADMINISTRADOR")) {
-        res.redirect("/?error=Acceso no autorizado");
-        return null;
+        List<String> roles = (List<String>) req.session().attribute("roles");
+        if (roles == null || !roles.contains("ADMINISTRADOR")) {
+            res.redirect("/?error=Acceso no autorizado");
+            return null;
+        }
+        Map<String, Object> model = new HashMap<>();
+        String successMessage = req.queryParams("message");
+        if (successMessage != null && !successMessage.isEmpty()) model.put("successMessage", successMessage);
+
+        String errorMessage = req.queryParams("error");
+        if (errorMessage != null && !errorMessage.isEmpty()) model.put("errorMessage", errorMessage);
+
+        return new ModelAndView(model, "persona_form.mustache");
     }
-    Map<String, Object> model = new HashMap<>();
-
-    String successMessage = req.queryParams("message");
-    if (successMessage != null && !successMessage.isEmpty()) model.put("successMessage", successMessage);
-
-    String errorMessage = req.queryParams("error");
-    if (errorMessage != null && !errorMessage.isEmpty()) model.put("errorMessage", errorMessage);
-
-    return new ModelAndView(model, "persona_form.mustache");
-}
 
     public Object createPersona(Request req, Response res) {
         List<String> sessionRoles = (List<String>) req.session().attribute("roles");
