@@ -3,6 +3,7 @@ package com.is1.proyecto;
 import org.javalite.activejdbc.Base;
 
 import com.is1.proyecto.config.DBConfigSingleton;
+import com.is1.proyecto.config.DatabaseSeeder;
 import com.is1.proyecto.config.Routes;
 
 import static spark.Spark.after;
@@ -41,13 +42,11 @@ public class App {
                         Base.exec(stmt);
                         ok++;
                     } catch (Exception e) {
-                        // ALTER TABLE con columna ya existente u otro conflicto idempotente — ignorar
-                        System.out.println("[SCHEMA SKIP] " + e.getMessage().split("\n")[0]);
                         skip++;
                     }
                 }
-                System.out.println("✓ Esquema aplicado: " + ok + " sentencias OK, " + skip + " omitidas.");
             }
+            DatabaseSeeder.run(); // corre el comando para agregar un admin por defecto
             Base.close();
         } catch (Exception e) {
             System.err.println("Error crítico al inicializar base de datos: " + e.getMessage());
@@ -60,7 +59,6 @@ public class App {
                 // Cerrar conexión huérfana del hilo (puede quedar si halt() cortó un request anterior)
                 if (Base.hasConnection()) Base.close();
                 Base.open(dbConfig.getDriver(), dbConfig.getDbUrl(), dbConfig.getUser(), dbConfig.getPass());
-                System.out.println("[REQUEST] " + req.requestMethod() + " " + req.url());
             } catch (Exception e) {
                 System.err.println("Error al abrir conexión con BD: " + e.getMessage());
                 halt(500, "{\"error\": \"Error al conectar a la base de datos\"}");

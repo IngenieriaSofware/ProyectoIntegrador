@@ -30,7 +30,6 @@ public class UserController {
      */
     public ModelAndView showCreateForm(Request req, Response res) {
         Map<String, Object> model = new HashMap<>();
-
         String successMessage = req.queryParams("message");
         if (successMessage != null && !successMessage.isEmpty()) {
             model.put("successMessage", successMessage);
