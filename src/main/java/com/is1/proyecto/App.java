@@ -46,8 +46,7 @@ public class App {
                     }
                 }
             }
-
-            DatabaseSeeder.run();
+            DatabaseSeeder.run(); // corre el comando para agregar un admin por defecto
             Base.close();
         } catch (Exception e) {
             System.err.println("Error crítico al inicializar base de datos: " + e.getMessage());
