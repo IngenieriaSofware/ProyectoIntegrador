@@ -93,6 +93,14 @@ public class Routes {
 
         // GET /estudiante - Dashboard de Estudiante
         get("/estudiante", (req, res) -> estudianteController.showEstudianteDashboard(req, res), templateEngine);
+        get("/estudiante/inscripcion/carreras", (req, res) -> estudianteController.showInscripcionCarreras(req, res), templateEngine);
+        get("/estudiante/inscripcion/carreras/:id", (req, res) -> estudianteController.showInscripcionCarreraDetalle(req, res), templateEngine);
+        post("/estudiante/inscripcion/carreras/:id", (req, res) -> estudianteController.enrollCarrera(req, res));
+
+        // Inscripción a materias
+        get("/estudiante/materias", (req, res) -> estudianteController.showMisMaticas(req, res), templateEngine);
+        post("/estudiante/inscribirse-comision", (req, res) -> estudianteController.inscribirseAComision(req, res));
+        get("/estudiante/mis-cursos", (req, res) -> estudianteController.showMisCursos(req, res), templateEngine);
 
         // ========================================
         // RUTAS PROTEGIDAS: ADMINISTRADOR (si se mantiene el rol)
@@ -191,6 +199,7 @@ public class Routes {
 
         // Estudiante requiere rol ESTUDIANTE
         before("/estudiante", AuthMiddleware.requireRole("ESTUDIANTE"));
+        before("/estudiante/*", AuthMiddleware.requireRole("ESTUDIANTE"));
 
         // Administrador requiere rol ADMINISTRADOR (si se mantiene el rol)
         before("/admin", AuthMiddleware.requireRole("ADMINISTRADOR"));

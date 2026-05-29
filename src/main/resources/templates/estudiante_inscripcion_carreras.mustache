@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inscripción a Carrera</title>
+    <link rel="stylesheet" href="/css/login-style.css">
+    <link rel="stylesheet" href="https://unicons.iconscout.com/release/v4.0.0/css/line.css">
+    <link rel="stylesheet" href="/css/style-dashboard.css">
+</head>
+<body>
+<div class="dashboard-container">
+
+    <div class="dashboard-header">
+        <div class="header-left">
+            <div class="header-icon"><i class="uil uil-graduation-cap"></i></div>
+            <div>
+                <h1>Inscripción a Carrera</h1>
+                <span class="role-badge">Estudiante</span>
+            </div>
+        </div>
+        <div class="user-info">
+            <div class="email">{{email}}</div>
+            <div class="role-text">Seleccioná una carrera vigente</div>
+            <a href="/estudiante" class="logout-btn">← Volver</a>
+        </div>
+    </div>
+
+    {{#successMessage}}
+    <div class="alert alert-success" style="background:#d1fae5;color:#065f46;padding:12px 18px;border-radius:8px;margin-bottom:16px;">{{successMessage}}</div>
+    {{/successMessage}}
+    {{#errorMessage}}
+    <div class="alert alert-danger" style="background:#fee2e2;color:#991b1b;padding:12px 18px;border-radius:8px;margin-bottom:16px;">{{errorMessage}}</div>
+    {{/errorMessage}}
+
+    <div class="dashboard-section">
+        <p class="section-title">📚 Carreras vigentes</p>
+        <div class="cards-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px;">
+            {{#carreras}}
+            <div class="info-card" style="padding:20px;border:1px solid #e5e7eb;border-radius:16px;background:#ffffff;">
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+                    <div>
+                        <h2 style="margin:0 0 8px;font-size:1.1rem;color:#111827;">{{nombre}}</h2>
+                        <div style="font-size:13px;color:#6b7280;margin-bottom:12px;">Código: {{codigo}}</div>
+                    </div>
+                    {{#tienePlanesActivos}}
+                    <span style="background:#e0f2fe;color:#0369a1;padding:5px 10px;border-radius:999px;font-size:12px;">Planes vigentes</span>
+                    {{/tienePlanesActivos}}
+                    {{^tienePlanesActivos}}
+                    <span style="background:#fee2e2;color:#991b1b;padding:5px 10px;border-radius:999px;font-size:12px;">Sin planes vigentes</span>
+                    {{/tienePlanesActivos}}
+                </div>
+                <p style="margin:0 0 14px;color:#4b5563;min-height:64px;">{{descripcion}}</p>
+                <div style="font-size:13px;color:#4b5563;margin-bottom:16px;">{{planActivoAnio}}</div>
+                {{#tienePlanesActivos}}
+                <a href="/estudiante/inscripcion/carreras/{{id}}" class="action-btn" style="display:inline-block;padding:10px 16px;border-radius:10px;background:#2563eb;color:#fff;text-decoration:none;font-weight:600;">Ver planes</a>
+                {{/tienePlanesActivos}}
+                {{^tienePlanesActivos}}
+                <span style="color:#9ca3af;font-size:13px;">No se pueden inscribir carreras sin planes vigentes.</span>
+                {{/tienePlanesActivos}}
+            </div>
+            {{/carreras}}
+        </div>
+
+        {{^carreras}}
+        <div style="text-align:center;padding:40px;color:#6b7280;">No hay carreras vigentes disponibles en este momento.</div>
+        {{/carreras}}
+    </div>
+
+</div>
+</body>
+</html>

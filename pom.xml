@@ -141,7 +141,7 @@
         <version>${activejdbc.version}</version>
         <executions>
           <execution>
-            <phase>process-classes</phase>
+            <phase>compile</phase>
             <goals>
               <goal>instrument</goal>
             </goals>
