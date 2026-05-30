@@ -9,6 +9,7 @@ import java.util.Map;
 import org.javalite.activejdbc.Base;
 
 import com.is1.proyecto.models.Carrera;
+import com.is1.proyecto.models.Estudiante;
 import com.is1.proyecto.models.PlanDeEstudio;
 
 public class CarreraService {
@@ -102,8 +103,6 @@ public class CarreraService {
         return result;
     }
 
-<<<<<<< Updated upstream
-=======
     public Map<String, Object> listarCarrerasVigentes() {
         List<Map> rows = Base.findAll(
             "SELECT c.id, c.codigo, c.nombre, c.descripcion, c.activa, " +
@@ -128,7 +127,6 @@ public class CarreraService {
         }
 
         Map<String, Object> result = new HashMap<>();
-        result.put("success", true);
         result.put("carreras", carreras);
         return result;
     }
@@ -203,7 +201,6 @@ public class CarreraService {
         return result;
     }
 
->>>>>>> Stashed changes
     public Map<String, Object> crearCarrera(String codigo, String nombre, String descripcion) {
         Map<String, Object> result = new HashMap<>();
         codigo = codigo.toUpperCase().replaceAll("\\s+", "").trim();
