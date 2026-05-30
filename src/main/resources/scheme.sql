@@ -262,3 +262,18 @@ CREATE TABLE IF NOT EXISTS materias_planes (
     FOREIGN KEY (creado_por) REFERENCES personas(id)
 );
 
+-- ========================================
+-- MÓDULO C - INSCRIPCIÓN DE ESTUDIANTES
+-- ========================================
+
+CREATE TABLE IF NOT EXISTS inscripciones_comisiones (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    estudiante_id INTEGER NOT NULL,
+    comision_id INTEGER NOT NULL,
+    fecha_inscripcion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    estado TEXT NOT NULL DEFAULT 'ACTIVA' CHECK(estado IN ('ACTIVA', 'RETIRADO', 'APROBADO', 'REPROBADO')),
+    UNIQUE (estudiante_id, comision_id),
+    FOREIGN KEY (estudiante_id) REFERENCES estudiantes(id) ON DELETE CASCADE,
+    FOREIGN KEY (comision_id) REFERENCES comisiones(id) ON DELETE CASCADE
+);
+

@@ -9,6 +9,7 @@ import java.util.Map;
 import org.javalite.activejdbc.Base;
 
 import com.is1.proyecto.models.Carrera;
+import com.is1.proyecto.models.Estudiante;
 import com.is1.proyecto.models.PlanDeEstudio;
 
 public class CarreraService {
@@ -99,6 +100,104 @@ public class CarreraService {
         result.put("planes", planes);
         result.put("tieneMultiplesActivos", activosCount > 1);
         result.put("sinPlanActivo", activosCount == 0);
+        return result;
+    }
+
+    public Map<String, Object> listarCarrerasVigentes() {
+        List<Map> rows = Base.findAll(
+            "SELECT c.id, c.codigo, c.nombre, c.descripcion, c.activa, " +
+            "  (SELECT GROUP_CONCAT(p.anio_vigencia, ', ') " +
+            "   FROM planes_estudio p WHERE p.carrera_id = c.id AND p.activo = 1) AS planes_activos " +
+            "FROM carreras c WHERE c.activa = 1 ORDER BY c.nombre ASC"
+        );
+
+        List<Map<String, Object>> carreras = new ArrayList<>();
+        for (Map row : rows) {
+            Map<String, Object> m = new HashMap<>();
+            m.put("id", row.get("id"));
+            m.put("codigo", row.get("codigo"));
+            m.put("nombre", row.get("nombre"));
+            m.put("descripcion", row.get("descripcion"));
+            m.put("activa", toBoolean(row.get("activa")));
+            Object pa = row.get("planes_activos");
+            String planActivoAnio = pa != null ? pa.toString() : "Sin plan vigente";
+            m.put("planActivoAnio", planActivoAnio);
+            m.put("tienePlanesActivos", pa != null && !pa.toString().trim().isEmpty());
+            carreras.add(m);
+        }
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("carreras", carreras);
+        return result;
+    }
+
+    public Map<String, Object> getCarreraConPlanesActivos(int id) {
+        Carrera carrera = Carrera.findById(id);
+        if (carrera == null || !carrera.isActiva()) return null;
+
+        List<Map> planRows = Base.findAll(
+            "SELECT * FROM planes_estudio WHERE carrera_id = ? AND activo = 1 ORDER BY anio_vigencia DESC", id
+        );
+
+        List<Map<String, Object>> planes = new ArrayList<>();
+        for (Map row : planRows) {
+            Map<String, Object> p = new HashMap<>();
+            p.put("id", row.get("id"));
+            p.put("anioVigencia", row.get("anio_vigencia"));
+            p.put("descripcion", row.get("descripcion"));
+            p.put("duracionAnios", row.get("duracion_anios"));
+            p.put("activo", true);
+            planes.add(p);
+        }
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("id", carrera.getLongId());
+        result.put("codigo", carrera.getCodigo());
+        result.put("nombre", carrera.getNombre());
+        result.put("descripcion", carrera.getDescripcion());
+        result.put("planes", planes);
+        result.put("tienePlanes", !planes.isEmpty());
+        result.put("sinPlanes", planes.isEmpty());
+        return result;
+    }
+
+    public Map<String, Object> inscribirEstudiante(int personaId, int carreraId, int planId) {
+        Map<String, Object> result = new HashMap<>();
+
+        Estudiante estudiante = Estudiante.findByPersonaId(personaId).orElse(null);
+        if (estudiante == null) {
+            result.put("success", false);
+            result.put("message", "Perfil de estudiante no encontrado.");
+            return result;
+        }
+
+        Carrera carrera = Carrera.findById(carreraId);
+        if (carrera == null || !carrera.isActiva()) {
+            result.put("success", false);
+            result.put("message", "Carrera no válida o inactiva.");
+            return result;
+        }
+
+        PlanDeEstudio plan = PlanDeEstudio.findById(planId);
+        if (plan == null || plan.getCarreraId() != carreraId || !plan.isActivo()) {
+            result.put("success", false);
+            result.put("message", "Plan de estudio no válido o no vigente.");
+            return result;
+        }
+
+        String planLabel = "Plan " + plan.getAnioVigencia();
+        if (plan.getDescripcion() != null && !plan.getDescripcion().trim().isEmpty()) {
+            planLabel += " - " + plan.getDescripcion().trim();
+        }
+
+        estudiante.setCarrera(carrera.getNombre());
+        estudiante.setPlanEstudio(planLabel);
+        estudiante.saveIt();
+
+        result.put("success", true);
+        result.put("message", "Inscripción a la carrera registrada con éxito.");
+        result.put("carrera", carrera.getNombre());
+        result.put("planEstudio", planLabel);
         return result;
     }
 
@@ -318,6 +417,241 @@ public class CarreraService {
         m.put("duracionAnios", plan.getDuracionAnios());
         m.put("activo", plan.isActivo());
         return m;
+    }
+
+    // ── INSCRIPCIÓN A MATERIAS ──────────────────────────────────
+
+    public Map<String, Object> listarMateriasDisponibles(int personaId) {
+        Map<String, Object> result = new HashMap<>();
+
+        Estudiante estudiante = Estudiante.findByPersonaId(personaId).orElse(null);
+        if (estudiante == null) {
+            result.put("success", false);
+            result.put("message", "Perfil de estudiante no encontrado.");
+            return result;
+        }
+
+        String planEstudio = estudiante.getPlanEstudio();
+        if (planEstudio == null || planEstudio.isEmpty() || "Sin asignar".equals(planEstudio)) {
+            result.put("success", false);
+            result.put("message", "Debes estar inscrito a una carrera primero.");
+            return result;
+        }
+
+        // Extraer el año del plan (ej: "Plan 2020 - Descripción" → 2020)
+        int planYear = extractYearFromPlan(planEstudio);
+        if (planYear == -1) {
+            result.put("success", false);
+            result.put("message", "No se pudo determinar el año del plan.");
+            return result;
+        }
+
+        // Obtener el plan_estudio_id basado en el año
+        List<Map> planRows = Base.findAll(
+            "SELECT id FROM planes_estudio WHERE anio_vigencia = ? AND activo = 1 LIMIT 1",
+            planYear
+        );
+        if (planRows.isEmpty()) {
+            result.put("success", false);
+            result.put("message", "Plan de estudio no encontrado o inactivo.");
+            return result;
+        }
+
+        int planId = ((Number) planRows.get(0).get("id")).intValue();
+
+        // Obtener el período lectivo activo
+        List<Map> periodoRows = Base.findAll(
+            "SELECT id FROM periodos_lectivos WHERE activo = 1 LIMIT 1"
+        );
+        if (periodoRows.isEmpty()) {
+            result.put("success", false);
+            result.put("message", "No hay un período lectivo activo.");
+            return result;
+        }
+
+        int periodoId = ((Number) periodoRows.get(0).get("id")).intValue();
+
+        // Obtener comisiones activas del plan y período
+        List<Map> comisionRows = Base.findAll(
+            "SELECT c.id, c.nombre, c.turno, m.codigo, m.nombre as materia_nombre, " +
+            "       COUNT(DISTINCT ic.id) as inscritos " +
+            "FROM comisiones c " +
+            "JOIN materias m ON c.materia_id = m.id " +
+            "LEFT JOIN inscripciones_comisiones ic ON c.id = ic.comision_id " +
+            "WHERE c.plan_estudio_id = ? AND c.periodo_id = ? AND c.estado = 'ACTIVA' " +
+            "GROUP BY c.id " +
+            "ORDER BY m.codigo, c.turno",
+            planId, periodoId
+        );
+
+        List<Map<String, Object>> comisiones = new ArrayList<>();
+        for (Map row : comisionRows) {
+            // Verificar si ya está inscrito
+            List<Map> inscriptoRows = Base.findAll(
+                "SELECT 1 FROM inscripciones_comisiones ic " +
+                "JOIN estudiantes e ON ic.estudiante_id = e.id " +
+                "WHERE e.persona_id = ? AND ic.comision_id = ?",
+                personaId, row.get("id")
+            );
+
+            Map<String, Object> c = new HashMap<>();
+            c.put("id", row.get("id"));
+            c.put("nombre", row.get("nombre"));
+            c.put("turno", formatTurno((String) row.get("turno")));
+            c.put("materiaCodigo", row.get("codigo"));
+            c.put("materiaNombre", row.get("materia_nombre"));
+            c.put("inscritos", row.get("inscritos"));
+            c.put("yaInscripto", !inscriptoRows.isEmpty());
+            comisiones.add(c);
+        }
+
+        result.put("success", true);
+        result.put("comisiones", comisiones);
+        result.put("carrera", estudiante.getCarrera());
+        result.put("planEstudio", planEstudio);
+        result.put("totalDisponibles", comisiones.size());
+        return result;
+    }
+
+    public Map<String, Object> inscribirseAComision(int personaId, int comisionId) {
+        Map<String, Object> result = new HashMap<>();
+
+        Estudiante estudiante = Estudiante.findByPersonaId(personaId).orElse(null);
+        if (estudiante == null) {
+            result.put("success", false);
+            result.put("message", "Perfil de estudiante no encontrado.");
+            return result;
+        }
+
+        List<Map> estudianteRows = Base.findAll(
+            "SELECT id FROM estudiantes WHERE persona_id = ?",
+            personaId
+        );
+        if (estudianteRows.isEmpty()) {
+            result.put("success", false);
+            result.put("message", "Registro de estudiante no encontrado.");
+            return result;
+        }
+
+        int estudianteId = ((Number) estudianteRows.get(0).get("id")).intValue();
+
+        // Verificar que la comisión existe y está activa
+        List<Map> comisionRows = Base.findAll(
+            "SELECT c.id, m.nombre FROM comisiones c " +
+            "JOIN materias m ON c.materia_id = m.id " +
+            "WHERE c.id = ? AND c.estado = 'ACTIVA'",
+            comisionId
+        );
+        if (comisionRows.isEmpty()) {
+            result.put("success", false);
+            result.put("message", "Comisión no encontrada o no está activa.");
+            return result;
+        }
+
+        String materiaNombre = (String) comisionRows.get(0).get("nombre");
+
+        // Verificar no está duplicado
+        List<Map> duplicado = Base.findAll(
+            "SELECT 1 FROM inscripciones_comisiones WHERE estudiante_id = ? AND comision_id = ?",
+            estudianteId, comisionId
+        );
+        if (!duplicado.isEmpty()) {
+            result.put("success", false);
+            result.put("message", "Ya estás inscripto a esta comisión.");
+            return result;
+        }
+
+        // Insertar inscripción
+        try {
+            Base.exec(
+                "INSERT INTO inscripciones_comisiones (estudiante_id, comision_id, estado) VALUES (?, ?, 'ACTIVA')",
+                estudianteId, comisionId
+            );
+
+            result.put("success", true);
+            result.put("message", "¡Inscripción registrada exitosamente!");
+            result.put("materia", materiaNombre);
+            return result;
+
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("message", "Error al registrar inscripción: " + e.getMessage());
+            return result;
+        }
+    }
+
+    public Map<String, Object> obtenerMisCursos(int personaId) {
+        Map<String, Object> result = new HashMap<>();
+
+        Estudiante estudiante = Estudiante.findByPersonaId(personaId).orElse(null);
+        if (estudiante == null) {
+            result.put("success", false);
+            result.put("message", "Perfil de estudiante no encontrado.");
+            return result;
+        }
+
+        List<Map> cursos = Base.findAll(
+            "SELECT c.id, c.nombre, c.turno, m.codigo, m.nombre as materia_nombre, " +
+            "       p.anio_vigencia, COALESCE(per.nombre || ' ' || per.apellido, 'Sin asignar') as docente_nombre, ad.cargo " +
+            "FROM inscripciones_comisiones ic " +
+            "JOIN estudiantes e ON ic.estudiante_id = e.id " +
+            "JOIN comisiones c ON ic.comision_id = c.id " +
+            "JOIN materias m ON c.materia_id = m.id " +
+            "JOIN planes_estudio p ON c.plan_estudio_id = p.id " +
+            "LEFT JOIN asignaciones_docentes ad ON c.id = ad.comision_id AND ad.cargo = 'TITULAR' " +
+            "LEFT JOIN docentes d ON ad.docente_id = d.id " +
+            "LEFT JOIN personas per ON d.persona_id = per.id " +
+            "WHERE e.persona_id = ? AND ic.estado = 'ACTIVA' " +
+            "ORDER BY m.codigo, c.turno",
+            personaId
+        );
+
+        List<Map<String, Object>> misCursos = new ArrayList<>();
+        for (Map row : cursos) {
+            Map<String, Object> c = new HashMap<>();
+            c.put("comisionId", row.get("id"));
+            c.put("comisionNombre", row.get("nombre"));
+            c.put("turno", formatTurno((String) row.get("turno")));
+            c.put("materiaCodigo", row.get("codigo"));
+            c.put("materiaNombre", row.get("materia_nombre"));
+            c.put("planAnio", row.get("anio_vigencia"));
+            c.put("docenteNombre", row.get("docente_nombre"));
+            misCursos.add(c);
+        }
+
+        result.put("success", true);
+        result.put("misCursos", misCursos);
+        result.put("carrera", estudiante.getCarrera());
+        result.put("planEstudio", estudiante.getPlanEstudio());
+        result.put("total", misCursos.size());
+        return result;
+    }
+
+    private int extractYearFromPlan(String planEstudio) {
+        // Formato: "Plan YYYY..." → extraer YYYY
+        try {
+            if (planEstudio != null && planEstudio.contains("Plan")) {
+                String[] parts = planEstudio.split(" ");
+                for (int i = 0; i < parts.length; i++) {
+                    if ("Plan".equals(parts[i]) && i + 1 < parts.length) {
+                        return Integer.parseInt(parts[i + 1]);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            // Ignorar
+        }
+        return -1;
+    }
+
+    private String formatTurno(String turno) {
+        if (turno == null) return "";
+        switch(turno) {
+            case "MANANA": return "Mañana";
+            case "TARDE": return "Tarde";
+            case "NOCHE": return "Noche";
+            default: return turno;
+        }
     }
 
     // ── HELPERS ──────────────────────────────────────────────────

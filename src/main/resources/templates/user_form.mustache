@@ -140,6 +140,18 @@
                         <i class="uil uil-map-marker email"></i>
                     </div>
 
+                    <!-- Carrera -->
+                    <div class="input_box">
+                        <select name="carreraId" required>
+                            <option value="">-- Selecciona una carrera --</option>
+                            {{#carreras}}
+                            <option value="{{id}}">{{nombre}}</option>
+                            {{/carreras}}
+                        </select>
+                        <i class="uil uil-graduation-cap email"></i>
+                        <div class="field-hint" id="carrera-hint"></div>
+                    </div>
+
                     <div class="input_box">
                         <input type="text" value="ROL: ESTUDIANTE" readonly style="color: #555; background: #f5f5f5; cursor: default;" />
                         <input type="hidden" name="rol" value="ESTUDIANTE" />

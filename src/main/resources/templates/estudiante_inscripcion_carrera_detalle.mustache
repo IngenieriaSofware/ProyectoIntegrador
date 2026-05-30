@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Planes vigentes - {{nombre}}</title>
+    <link rel="stylesheet" href="/css/login-style.css">
+    <link rel="stylesheet" href="https://unicons.iconscout.com/release/v4.0.0/css/line.css">
+    <link rel="stylesheet" href="/css/style-dashboard.css">
+</head>
+<body>
+<div class="dashboard-container">
+
+    <div class="dashboard-header">
+        <div class="header-left">
+            <div class="header-icon"><i class="uil uil-graduation-cap"></i></div>
+            <div>
+                <h1>{{nombre}}</h1>
+                <span class="role-badge">Planes de estudio vigentes</span>
+            </div>
+        </div>
+        <div class="user-info">
+            <div class="email">{{email}}</div>
+            <div class="role-text">Seleccioná un plan para inscribirte</div>
+            <a href="/estudiante/inscripcion/carreras" class="logout-btn">← Volver a carreras</a>
+        </div>
+    </div>
+
+    {{#successMessage}}
+    <div class="alert alert-success" style="background:#d1fae5;color:#065f46;padding:12px 18px;border-radius:8px;margin-bottom:16px;">{{successMessage}}</div>
+    {{/successMessage}}
+    {{#errorMessage}}
+    <div class="alert alert-danger" style="background:#fee2e2;color:#991b1b;padding:12px 18px;border-radius:8px;margin-bottom:16px;">{{errorMessage}}</div>
+    {{/errorMessage}}
+
+    <div class="dashboard-section">
+        <div style="margin-bottom:24px;">
+            <p class="section-title">📘 Carrera: {{nombre}}</p>
+            <p style="color:#4b5563;margin-top:8px;">{{descripcion}}</p>
+        </div>
+
+        {{#sinPlanes}}
+        <div style="padding:24px;border:1px solid #f3f4f6;border-radius:16px;background:#f8fafc;color:#475569;">
+            Esta carrera no cuenta con planes de estudio vigentes en este momento. Contactá a la coordinación para obtener más información.
+        </div>
+        {{/sinPlanes}}
+
+        {{#tienePlanes}}
+        <form action="/estudiante/inscripcion/carreras/{{carreraId}}" method="post">
+            <div style="display:grid;gap:16px;">
+                {{#planes}}
+                <label style="display:block;padding:18px;border:1px solid #e5e7eb;border-radius:16px;cursor:pointer;background:#ffffff;">
+                    <input type="radio" name="planId" value="{{id}}" required style="margin-right:10px;vertical-align:middle;">
+                    <strong>Plan {{anioVigencia}}</strong>
+                    <div style="color:#6b7280;font-size:14px;margin-top:6px;">{{descripcion}}</div>
+                    {{#duracionAnios}}
+                    <div style="color:#9ca3af;font-size:13px;margin-top:6px;">Duración: {{duracionAnios}} años</div>
+                    {{/duracionAnios}}
+                </label>
+                {{/planes}}
+            </div>
+
+            <button type="submit" class="action-btn" style="margin-top:20px;padding:12px 18px;border:none;border-radius:12px;background:#2563eb;color:#fff;font-weight:700;">Inscribirme en la carrera</button>
+        </form>
+        {{/tienePlanes}}
+    </div>
+
+</div>
+</body>
+</html>

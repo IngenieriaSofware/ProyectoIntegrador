@@ -6,6 +6,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
+import org.javalite.activejdbc.Base;
+
+import com.is1.proyecto.models.Carrera;
 import com.is1.proyecto.models.Docente;
 import com.is1.proyecto.models.Estudiante;
 import com.is1.proyecto.models.Persona;
@@ -41,6 +44,12 @@ public class UserService {
     public Map<String, Object> registerPersona(String dni, String nombre, String apellido, 
                                                String email, String password, String telefono, 
                                                String localidad, String rolInicial) {
+        return registerPersona(dni, nombre, apellido, email, password, telefono, localidad, rolInicial, 0);
+    }
+
+    public Map<String, Object> registerPersona(String dni, String nombre, String apellido, 
+                                               String email, String password, String telefono, 
+                                               String localidad, String rolInicial, int carreraId) {
         Map<String, Object> result = new HashMap<>();
 
         // === VALIDACIONES ===
@@ -131,8 +140,36 @@ public class UserService {
             if ("ESTUDIANTE".equals(rolInicial)) {
                 Estudiante student = new Estudiante();
                 student.set("persona_id", persona.getId());
-                student.set("carrera", "Sin asignar");
-                student.set("plan_estudio", "Sin asignar");
+                
+                // Si carreraId fue proporcionado, obtener datos de carrera
+                if (carreraId > 0) {
+                    Carrera carrera = Carrera.findById(carreraId);
+                    if (carrera != null) {
+                        // Guardar nombre de carrera
+                        student.set("carrera", carrera.getString("nombre"));
+                        
+                        // Obtener plan vigente de esta carrera
+                        List<Map> planResult = Base.findAll(
+                            "SELECT * FROM planes_estudio WHERE carrera_id = ? AND activo = 1 ORDER BY anio_vigencia DESC LIMIT 1",
+                            carreraId
+                        );
+                        
+                        if (!planResult.isEmpty()) {
+                            Map planMap = planResult.get(0);
+                            int anioVigencia = ((Number) planMap.get("anio_vigencia")).intValue();
+                            student.set("plan_estudio", "Plan " + anioVigencia);
+                        } else {
+                            student.set("plan_estudio", "Sin asignar");
+                        }
+                    } else {
+                        student.set("carrera", "Sin asignar");
+                        student.set("plan_estudio", "Sin asignar");
+                    }
+                } else {
+                    student.set("carrera", "Sin asignar");
+                    student.set("plan_estudio", "Sin asignar");
+                }
+                
                 student.set("estado_id", 1); // 1 = Activo en testado
                 student.saveIt();
 

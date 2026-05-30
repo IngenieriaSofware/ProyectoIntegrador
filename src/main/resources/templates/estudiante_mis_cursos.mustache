@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{title}}</title>
+    <link rel="stylesheet" href="/css/login-style.css">
+    <link rel="stylesheet" href="https://unicons.iconscout.com/release/v4.0.0/css/line.css">
+    <link rel="stylesheet" href="/css/style-dashboard.css">
+    <style>
+        .cursos-container { max-width: 1000px; margin: 20px auto; padding: 0 20px; }
+        .cursos-header { margin-bottom: 30px; }
+        .cursos-section { background: #f8f9fa; border-radius: 10px; padding: 20px; margin-bottom: 20px; }
+        .curso-card { background: white; border: 1px solid #e0e0e0; border-radius: 8px; padding: 15px; margin-bottom: 15px; }
+        .curso-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+        .curso-titulo { }
+        .curso-nombre { font-weight: bold; font-size: 16px; color: #333; }
+        .curso-codigo { font-size: 12px; color: #666; }
+        .curso-turno { font-size: 14px; color: #2563eb; margin-top: 5px; }
+        .curso-badge { background: #10b981; color: white; padding: 4px 12px; border-radius: 12px; font-size: 12px; }
+        .curso-info { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
+        .info-item { padding: 10px; background: #f0f9ff; border-left: 3px solid #2563eb; }
+        .info-label { font-size: 12px; color: #666; font-weight: 600; }
+        .info-value { font-size: 14px; color: #333; margin-top: 5px; }
+        .empty-message { text-align: center; padding: 40px; color: #666; }
+        .goto-btn { display: inline-block; margin-top: 20px; }
+    </style>
+</head>
+<body>
+<div class="dashboard-container">
+
+    <!-- HEADER -->
+    <div class="dashboard-header">
+        <div class="header-left">
+            <div class="header-icon"><i class="uil uil-book"></i></div>
+            <div>
+                <h1>Mis Cursos</h1>
+                <span class="role-badge">Estudiante</span>
+            </div>
+        </div>
+        <div class="user-info">
+            <div class="email">{{email}}</div>
+            <div class="role-text">Sesión activa</div>
+            <a href="/logout" class="logout-btn">Cerrar sesión</a>
+        </div>
+    </div>
+
+    <!-- CONTENIDO -->
+    <div class="cursos-container">
+        {{#successMessage}}
+        <div class="alert alert-success" role="alert">
+            <i class="uil uil-check-circle"></i> {{successMessage}}
+        </div>
+        {{/successMessage}}
+
+        {{#errorMessage}}
+        <div class="alert alert-danger" role="alert">
+            <i class="uil uil-exclamation-circle"></i> {{errorMessage}}
+        </div>
+        {{/errorMessage}}
+
+        <div class="cursos-section">
+            <div class="cursos-header">
+                <div>
+                    <h2>Carrera: {{carrera}}</h2>
+                    <p style="margin: 10px 0 0; color: #666;">{{planEstudio}}</p>
+                </div>
+                <div style="text-align: right;">
+                    <span style="font-size: 24px; font-weight: bold; color: #2563eb;">{{total}}</span>
+                    <p style="color: #666; font-size: 14px;">Cursos inscritos</p>
+                </div>
+            </div>
+
+            {{#misCursos}}
+            <div class="curso-card">
+                <div class="curso-header">
+                    <div class="curso-titulo">
+                        <div class="curso-codigo">{{materiaCodigo}}</div>
+                        <div class="curso-nombre">{{materiaNombre}}</div>
+                        <div class="curso-turno"><i class="uil uil-clock-eight"></i> {{turno}}</div>
+                    </div>
+                    <span class="curso-badge"><i class="uil uil-check"></i> Activo</span>
+                </div>
+                <div class="curso-info">
+                    <div class="info-item">
+                        <div class="info-label">Plan de Estudio</div>
+                        <div class="info-value">{{planAnio}}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Docente Titula</div>
+                        <div class="info-value">{{docenteNombre}}</div>
+                    </div>
+                </div>
+            </div>
+            {{/misCursos}}
+
+            {{^misCursos}}
+            <div class="empty-message">
+                <i class="uil uil-inbox" style="font-size: 64px; color: #ddd;"></i>
+                <p style="margin-top: 20px;">No estás inscripto a ningún curso aún.</p>
+                <a href="/estudiante/materias" class="logout-btn" style="text-decoration: none; display: inline-block; margin-top: 20px;">
+                    <i class="uil uil-plus"></i> Inscribirme a materias
+                </a>
+            </div>
+            {{/misCursos}}
+        </div>
+
+        <div style="margin-top: 20px; display: flex; gap: 10px;">
+            <a href="/estudiante" class="logout-btn" style="text-decoration: none; display: inline-block;">← Volver al panel</a>
+            {{#misCursos}}
+            <a href="/estudiante/materias" class="logout-btn" style="text-decoration: none; display: inline-block; background: #2563eb;">Agregar más materias →</a>
+            {{/misCursos}}
+        </div>
+    </div>
+
+</div>
+</body>
+</html>
