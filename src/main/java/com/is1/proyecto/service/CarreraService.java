@@ -102,6 +102,108 @@ public class CarreraService {
         return result;
     }
 
+<<<<<<< Updated upstream
+=======
+    public Map<String, Object> listarCarrerasVigentes() {
+        List<Map> rows = Base.findAll(
+            "SELECT c.id, c.codigo, c.nombre, c.descripcion, c.activa, " +
+            "  (SELECT GROUP_CONCAT(p.anio_vigencia, ', ') " +
+            "   FROM planes_estudio p WHERE p.carrera_id = c.id AND p.activo = 1) AS planes_activos " +
+            "FROM carreras c WHERE c.activa = 1 ORDER BY c.nombre ASC"
+        );
+
+        List<Map<String, Object>> carreras = new ArrayList<>();
+        for (Map row : rows) {
+            Map<String, Object> m = new HashMap<>();
+            m.put("id", row.get("id"));
+            m.put("codigo", row.get("codigo"));
+            m.put("nombre", row.get("nombre"));
+            m.put("descripcion", row.get("descripcion"));
+            m.put("activa", toBoolean(row.get("activa")));
+            Object pa = row.get("planes_activos");
+            String planActivoAnio = pa != null ? pa.toString() : "Sin plan vigente";
+            m.put("planActivoAnio", planActivoAnio);
+            m.put("tienePlanesActivos", pa != null && !pa.toString().trim().isEmpty());
+            carreras.add(m);
+        }
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("success", true);
+        result.put("carreras", carreras);
+        return result;
+    }
+
+    public Map<String, Object> getCarreraConPlanesActivos(int id) {
+        Carrera carrera = Carrera.findById(id);
+        if (carrera == null || !carrera.isActiva()) return null;
+
+        List<Map> planRows = Base.findAll(
+            "SELECT * FROM planes_estudio WHERE carrera_id = ? AND activo = 1 ORDER BY anio_vigencia DESC", id
+        );
+
+        List<Map<String, Object>> planes = new ArrayList<>();
+        for (Map row : planRows) {
+            Map<String, Object> p = new HashMap<>();
+            p.put("id", row.get("id"));
+            p.put("anioVigencia", row.get("anio_vigencia"));
+            p.put("descripcion", row.get("descripcion"));
+            p.put("duracionAnios", row.get("duracion_anios"));
+            p.put("activo", true);
+            planes.add(p);
+        }
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("id", carrera.getLongId());
+        result.put("codigo", carrera.getCodigo());
+        result.put("nombre", carrera.getNombre());
+        result.put("descripcion", carrera.getDescripcion());
+        result.put("planes", planes);
+        result.put("tienePlanes", !planes.isEmpty());
+        result.put("sinPlanes", planes.isEmpty());
+        return result;
+    }
+
+    public Map<String, Object> inscribirEstudiante(int personaId, int carreraId, int planId) {
+        Map<String, Object> result = new HashMap<>();
+
+        Estudiante estudiante = Estudiante.findByPersonaId(personaId).orElse(null);
+        if (estudiante == null) {
+            result.put("success", false);
+            result.put("message", "Perfil de estudiante no encontrado.");
+            return result;
+        }
+
+        Carrera carrera = Carrera.findById(carreraId);
+        if (carrera == null || !carrera.isActiva()) {
+            result.put("success", false);
+            result.put("message", "Carrera no válida o inactiva.");
+            return result;
+        }
+
+        PlanDeEstudio plan = PlanDeEstudio.findById(planId);
+        if (plan == null || plan.getCarreraId() != carreraId || !plan.isActivo()) {
+            result.put("success", false);
+            result.put("message", "Plan de estudio no válido o no vigente.");
+            return result;
+        }
+
+        String planLabel = "Plan " + plan.getAnioVigencia();
+        if (plan.getDescripcion() != null && !plan.getDescripcion().trim().isEmpty()) {
+            planLabel += " - " + plan.getDescripcion().trim();
+        }
+
+        estudiante.setCarrera(carrera.getNombre());
+        estudiante.setPlanEstudio(planLabel);
+        estudiante.saveIt();
+
+        result.put("success", true);
+        result.put("message", "Inscripción a la carrera registrada con éxito.");
+        result.put("carrera", carrera.getNombre());
+        result.put("planEstudio", planLabel);
+        return result;
+    }
+
+>>>>>>> Stashed changes
     public Map<String, Object> crearCarrera(String codigo, String nombre, String descripcion) {
         Map<String, Object> result = new HashMap<>();
         codigo = codigo.toUpperCase().replaceAll("\\s+", "").trim();
