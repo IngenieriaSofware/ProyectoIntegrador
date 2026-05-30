@@ -8,7 +8,6 @@ import java.util.Map;
 
 import com.is1.proyecto.models.Persona;
 import com.is1.proyecto.service.UserService;
-import com.is1.proyecto.service.CarreraService;
 
 import spark.ModelAndView;
 import spark.Request;
@@ -21,11 +20,9 @@ import spark.Response;
 public class UserController {
 
     private UserService userService;
-    private CarreraService carreraService;
 
     public UserController() {
         this.userService = new UserService();
-        this.carreraService = new CarreraService();
     }
 
     /**
@@ -43,14 +40,6 @@ public class UserController {
             model.put("errorMessage", errorMessage);
         }
 
-        // Cargar carreras vigentes
-        Map<String, Object> carrerasResult = carreraService.listarCarrerasVigentes();
-        if ((Boolean) carrerasResult.get("success")) {
-            @SuppressWarnings("unchecked")
-            List<Map<String, Object>> carreras = (List<Map<String, Object>>) carrerasResult.get("carreras");
-            model.put("carreras", carreras);
-        }
-
         return new ModelAndView(model, "user_form.mustache");
     }
 
@@ -66,30 +55,10 @@ public class UserController {
         String telefono = req.queryParams("telefono");
         String localidad = req.queryParams("localidad");
         String rolInicial = req.queryParams("rol");
-        String carreraIdStr = req.queryParams("carreraId");
-
-        // Validar carreraId si el rol es ESTUDIANTE
-        int carreraId = 0;
-        if ("ESTUDIANTE".equals(rolInicial)) {
-            if (carreraIdStr == null || carreraIdStr.trim().isEmpty()) {
-                res.status(400);
-                String msg = URLEncoder.encode("Debes seleccionar una carrera", StandardCharsets.UTF_8);
-                res.redirect("/user/new?error=" + msg);
-                return "";
-            }
-            try {
-                carreraId = Integer.parseInt(carreraIdStr);
-            } catch (NumberFormatException e) {
-                res.status(400);
-                String msg = URLEncoder.encode("Selección de carrera inválida", StandardCharsets.UTF_8);
-                res.redirect("/user/new?error=" + msg);
-                return "";
-            }
-        }
 
         // Registrar Persona
-        Map<String, Object> result = userService.registerPersona(dni, nombre, apellido, email, 
-                                                                 password, telefono, localidad, rolInicial, carreraId);
+        Map<String, Object> result = userService.registerPersona(dni, nombre, apellido, email,
+                                                                 password, telefono, localidad, rolInicial);
 
         if ((Boolean) result.get("success")) {
             res.status(201);
