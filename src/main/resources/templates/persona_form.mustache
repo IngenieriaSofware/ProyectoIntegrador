@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Agregar Persona</title>
+    <link rel="stylesheet" href="/css/login-style.css" />
+    <link rel="stylesheet" href="https://unicons.iconscout.com/release/v4.0.0/css/line.css" />
+    <style>
+        .input_box select {
+            width: 100%;
+            height: 100%;
+            outline: none;
+            padding: 0 30px;
+            border-radius: 6px;
+            border: 1.5px solid #aaaaaa;
+            transition: all 0.3s ease;
+            background: #fff;
+            appearance: none;
+        }
+        .input_box select:focus { border-color: #7d2ae8; }
+
+        .input_box input.invalid { border-color: #e53935 !important; }
+        .input_box input.valid   { border-color: #43a047 !important; }
+
+        .field-hint {
+            font-size: 10.5px;
+            margin-top: 1px;
+            margin-left: 2px;
+            min-height: 13px;
+            line-height: 1.2;
+            transition: color 0.2s;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .field-hint.error { color: #e53935; }
+        .field-hint.ok    { color: #43a047; }
+
+        /* Checkboxes de roles */
+        .roles-box {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 6px;
+            border: 1.5px solid #aaaaaa;
+            background: #fff;
+            margin-bottom: 4px;
+        }
+
+        .roles-box p {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .roles-options {
+            display: flex;
+            gap: 20px;
+        }
+
+        .role-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            color: #333;
+        }
+
+        .role-option input[type="checkbox"] {
+            width: 17px;
+            height: 17px;
+            accent-color: #7d2ae8;
+            cursor: pointer;
+        }
+
+        .roles-hint {
+            font-size: 10.5px;
+            margin-top: 1px;
+            margin-left: 2px;
+            min-height: 13px;
+            color: #e53935;
+            display: none;
+        }
+
+        .roles-hint.visible { display: block; }
+    </style>
+</head>
+<body>
+    <section class="home">
+        <div class="form_container">
+            <div class="form login_form">
+
+                {{#successMessage}}
+                <div class="alert alert-success" role="alert">{{successMessage}}</div>
+                {{/successMessage}}
+                {{#errorMessage}}
+                <div class="alert alert-danger" role="alert">{{errorMessage}}</div>
+                {{/errorMessage}}
+
+                <form action="/persona/new" method="post" id="personaForm">
+                    <h2>Agregar Persona</h2>
+
+                    <!-- DNI -->
+                    <div class="input_box">
+                        <input
+                            type="text"
+                            id="dni"
+                            name="dni"
+                            placeholder="DNI (7 u 8 dígitos)"
+                            maxlength="8"
+                            inputmode="numeric"
+                            pattern="\d{7,8}"
+                            required
+                        />
+                        <i class="uil uil-card-atm email"></i>
+                        <div class="field-hint" id="dni-hint"></div>
+                    </div>
+
+                    <!-- Nombre -->
+                    <div class="input_box">
+                        <input type="text" name="nombre" placeholder="Nombre" required />
+                        <i class="uil uil-user email"></i>
+                    </div>
+
+                    <!-- Apellido -->
+                    <div class="input_box">
+                        <input type="text" name="apellido" placeholder="Apellido" required />
+                        <i class="uil uil-user email"></i>
+                    </div>
+
+                    <!-- Email -->
+                    <div class="input_box">
+                        <input
+                            type="email"
+                            id="email"
+                            name="email"
+                            placeholder="Email (ejemplo@mail.com)"
+                            required
+                        />
+                        <i class="uil uil-envelope email"></i>
+                        <div class="field-hint" id="email-hint"></div>
+                    </div>
+
+                    <!-- Contraseña -->
+                    <div class="input_box">
+                        <input
+                            type="password"
+                            id="password"
+                            name="password"
+                            placeholder="Min 8 carac., 1 Mayús., 1 Minús."
+                            pattern="^(?=.*[a-z])(?=.*[A-Z]).{8,30}$"
+                            required
+                        />
+                        <i class="uil uil-lock password"></i>
+                        <i class="uil uil-eye-slash pw_hide"></i>
+                        <div class="field-hint" id="pw-hint"></div>
+                    </div>
+
+                    <!-- Teléfono -->
+                    <div class="input_box">
+                        <input
+                            type="text"
+                            id="telefono"
+                            name="telefono"
+                            placeholder="+54 9 358 456 7890"
+                            maxlength="18"
+                            inputmode="numeric"
+                            required
+                        />
+                        <i class="uil uil-phone email"></i>
+                        <div class="field-hint" id="tel-hint"></div>
+                    </div>
+
+                    <!-- Localidad -->
+                    <div class="input_box">
+                        <input
+                            type="text"
+                            name="localidad"
+                            placeholder="CIUDAD, PROVINCIA, PAIS"
+                            pattern="^[^,]+,\s*[^,]+,\s*[^,]+$"
+                            title="Formato: CIUDAD, PROVINCIA, PAIS"
+                            required
+                        />
+                        <i class="uil uil-map-marker email"></i>
+                    </div>
+
+                    <!-- Roles (checkboxes) -->
+                    <div class="roles-box">
+                        <p>Rol(es) a asignar — puede seleccionar más de uno:</p>
+                        <div class="roles-options">
+                            <label class="role-option">
+                                <input type="checkbox" name="roles" value="DOCENTE" id="rolDocente" />
+                                Docente
+                            </label>
+                            <label class="role-option">
+                                <input type="checkbox" name="roles" value="ESTUDIANTE" id="rolEstudiante" />
+                                Estudiante
+                            </label>
+                        </div>
+                    </div>
+                    <div class="roles-hint" id="roles-hint">Debe seleccionar al menos un rol.</div>
+
+                    <button type="submit" class="button">Guardar Persona</button>
+
+                    <div class="login_signup">
+                        <a href="/admin">← Volver al panel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <script src="/js/login-script.js"></script>
+    <script src="/js/persona-form.js"></script>
+</body>
+</html>

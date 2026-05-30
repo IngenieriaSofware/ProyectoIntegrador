@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{accion}} — {{materiaNombre}}</title>
+    <link rel="stylesheet" href="/css/login-style.css">
+    <link rel="stylesheet" href="https://unicons.iconscout.com/release/v4.0.0/css/line.css">
+    <link rel="stylesheet" href="/css/style-dashboard.css">
+    <style>
+        .form-group { margin-bottom: 18px; }
+        .form-group label { display:block; font-size:13px; font-weight:600; color:#374151; margin-bottom:6px; }
+        .form-group input, .form-group select {
+            width:100%; padding:10px 14px; border:1.5px solid #d1d5db; border-radius:8px;
+            font-size:14px; outline:none; transition: border-color 0.2s; box-sizing:border-box;
+        }
+        .form-group input:focus, .form-group select:focus { border-color:#2563eb; }
+        .form-group input[readonly] { background:#f9fafb; color:#6b7280; cursor:not-allowed; }
+        .hint { font-size:11.5px; color:#6b7280; margin-top:4px; }
+        .btn-primary { background:#2563eb;color:#fff;padding:10px 22px;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer; }
+        .btn-secondary { background:#f1f5f9;color:#374151;padding:10px 18px;border:1px solid #e2e8f0;border-radius:8px;font-size:14px;text-decoration:none;display:inline-block; }
+        .plan-info { background:#eff6ff;border:1px solid #bfdbfe;color:#1e40af;padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:18px; }
+    </style>
+</head>
+<body>
+<div class="admin-container">
+
+    <div class="admin-header">
+        <div class="header-left">
+            <div class="header-icon"><i class="uil uil-link"></i></div>
+            <div>
+                <h1>{{accion}}</h1>
+                <span class="role-badge">{{materiaCodigo}} — {{materiaNombre}}</span>
+            </div>
+        </div>
+        <div class="user-info">
+            <div class="email">{{email}}</div>
+            <a href="/admin/materias/{{materiaId}}" class="logout-btn">← Volver</a>
+        </div>
+    </div>
+
+    {{#errorMessage}}
+    <div style="background:#fee2e2;color:#991b1b;padding:12px 18px;border-radius:8px;margin-bottom:16px;">{{errorMessage}}</div>
+    {{/errorMessage}}
+
+    <div class="admin-section" style="max-width:580px;">
+        <form action="{{formAction}}" method="post" id="planForm">
+
+            {{#esEdicion}}
+            <!-- En edición: plan no modificable -->
+            <div class="plan-info">
+                Plan asociado: <strong>{{planDisplayText}}</strong> (no modificable)
+            </div>
+            {{/esEdicion}}
+
+            {{^esEdicion}}
+            <!-- En creación: selector de plan -->
+            <div class="form-group">
+                <label for="planEstudioId">Plan de Estudio *</label>
+                <select id="planEstudioId" name="planEstudioId" required>
+                    <option value="">— Seleccionar plan —</option>
+                    {{#planes}}
+                    <option value="{{id}}" {{#selected}}selected{{/selected}}>{{displayText}}</option>
+                    {{/planes}}
+                </select>
+                <div class="hint">Solo se listan planes en estado activo.</div>
+            </div>
+            {{/esEdicion}}
+
+            <div class="form-group">
+                <label for="anioPlan">Año del plan *</label>
+                <input type="number" id="anioPlan" name="anioPlan" min="1" max="10"
+                       placeholder="Ej: 1, 2, 3..." required value="{{anioPlan}}">
+                <div class="hint">Año de la carrera en que se cursa esta materia. Debe ser mayor a 0.</div>
+            </div>
+
+            <div class="form-group">
+                <label for="cuatrimestre">Cuatrimestre *</label>
+                <select id="cuatrimestre" name="cuatrimestre" required>
+                    <option value="">— Seleccionar —</option>
+                    <option value="PRIMERO" {{#cuatPrimero}}selected{{/cuatPrimero}}>1er Cuatrimestre</option>
+                    <option value="SEGUNDO" {{#cuatSegundo}}selected{{/cuatSegundo}}>2do Cuatrimestre</option>
+                    <option value="ANUAL" {{#cuatAnual}}selected{{/cuatAnual}}>Anual</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="cargaHoraria">Carga horaria semanal (horas) *</label>
+                <input type="number" id="cargaHoraria" name="cargaHoraria" min="1"
+                       placeholder="Ej: 4" required value="{{cargaHoraria}}">
+                <div class="hint">Horas semanales. Debe ser mayor a 0.</div>
+            </div>
+
+            <div class="form-group">
+                <label for="caracter">Carácter *</label>
+                <select id="caracter" name="caracter" required>
+                    <option value="">— Seleccionar —</option>
+                    <option value="OBLIGATORIA" {{#caracObligatoria}}selected{{/caracObligatoria}}>Obligatoria</option>
+                    <option value="ELECTIVA" {{#caracElectiva}}selected{{/caracElectiva}}>Electiva</option>
+                </select>
+            </div>
+
+            <div style="display:flex;gap:12px;align-items:center;margin-top:24px;">
+                <button type="submit" class="btn-primary">Confirmar</button>
+                <a href="/admin/materias/{{materiaId}}" class="btn-secondary">Cancelar</a>
+            </div>
+        </form>
+    </div>
+
+</div>
+</body>
+</html>

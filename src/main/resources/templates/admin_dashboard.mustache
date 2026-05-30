@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Administrativo</title>
+    <link rel="stylesheet" href="/css/login-style.css">
+    <link rel="stylesheet" href="https://unicons.iconscout.com/release/v4.0.0/css/line.css">
+    <link rel="stylesheet" href="/css/style-dashboard.css">
+</head>
+<body>
+<div class="admin-container">
+
+    <!-- HEADER -->
+    <div class="admin-header">
+        <div class="header-left">
+            <div class="header-icon"><i class="uil uil-shield-check"></i></div>
+            <div>
+                <h1>Panel Administrativo</h1>
+                <span class="role-badge">Administrador</span>
+            </div>
+        </div>
+        <div class="user-info">
+            <div class="email">{{email}}</div>
+            <div class="role-text">Sesión activa</div>
+            <a href="/logout" class="logout-btn">Cerrar sesión</a>
+        </div>
+    </div>
+
+    <!-- STATS -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon"><i class="uil uil-users-alt"></i></div>
+            <div class="stat-info"><h3>Total personas</h3><div class="stat-value">{{totalPersonas}}</div></div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon"><i class="uil uil-book-reader"></i></div>
+            <div class="stat-info"><h3>Docentes</h3><div class="stat-value">{{docentesCount}}</div></div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon"><i class="uil uil-graduation-cap"></i></div>
+            <div class="stat-info"><h3>Estudiantes</h3><div class="stat-value">{{estudiantesCount}}</div></div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon"><i class="uil uil-shield"></i></div>
+            <div class="stat-info"><h3>Administradores</h3><div class="stat-value">{{administradoresCount}}</div></div>
+        </div>
+    </div>
+
+    <!-- ACCIONES RÁPIDAS -->
+    <div class="admin-section">
+        <p class="section-title">⚡ Acciones rápidas</p>
+        <div class="actions-grid">
+            <a href="/persona/new" class="action-card">
+                <i class="uil uil-user-plus"></i>
+                <span class="card-title">Agregar persona</span>
+                <span class="card-desc">Registrar una nueva persona en el sistema</span>
+            </a>
+            <a href="/docente/list" class="action-card">
+                <i class="uil uil-users-alt"></i>
+                <span class="card-title">Gestionar docentes</span>
+                <span class="card-desc">Ver y administrar la lista de profesores</span>
+            </a>
+            <a href="/api/admin/usuarios" class="action-card">
+                <i class="uil uil-database"></i>
+                <span class="card-title">Gestión de usuarios</span>
+                <span class="card-desc">Buscar, asignar roles y moderar cuentas</span>
+            </a>
+            <a href="/admin/carreras" class="action-card">
+                <i class="uil uil-graduation-cap"></i>
+                <span class="card-title">Carreras y Planes</span>
+                <span class="card-desc">Carreras y planes de estudio (Módulo B.1)</span>
+            </a>
+            <a href="/admin/materias" class="action-card">
+                <i class="uil uil-book-open"></i>
+                <span class="card-title">Materias</span>
+                <span class="card-desc">Catálogo global de materias y asociación a planes (Módulo B.2)</span>
+            </a>
+            <a href="/admin/periodos" class="action-card">
+                <i class="uil uil-calender"></i>
+                <span class="card-title">Períodos Lectivos</span>
+                <span class="card-desc">Configurar y activar períodos cuatrimestrales</span>
+            </a>
+            <a href="/admin/comisiones" class="action-card">
+                <i class="uil uil-users-alt"></i>
+                <span class="card-title">Comisiones</span>
+                <span class="card-desc">Comisiones del período activo y asignación de docentes (Módulo D.1)</span>
+            </a>
+            <a href="/en_construccion?from=/admin" class="action-card">
+                <i class="uil uil-file-alt"></i>
+                <span class="card-title">Reportes de auditoría</span>
+                <span class="card-desc">Historial de acciones administrativas</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- GESTIÓN DE USUARIOS -->
+    <div class="admin-section">
+        <p class="section-title">👥 Gestión de usuarios</p>
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="Buscar por nombre, DNI, email...">
+            <button onclick="searchUsuarios()">Buscar</button>
+        </div>
+        <div id="usuariosContainer">
+            <div class="empty-state">Cargando usuarios...</div>
+        </div>
+    </div>
+
+    <!-- ROLES -->
+    <div class="admin-section">
+        <p class="section-title">🔑 Gestión de roles</p>
+        <ul class="info-list">
+            <li><strong>DOCENTE</strong> — Acceso a funciones de profesor y carga de materias.</li>
+            <li><strong>ESTUDIANTE</strong> — Acceso a cursos, perfil y notas.</li>
+            <li><strong>ADMINISTRADOR</strong> — Control total del sistema y usuarios.</li>
+        </ul>
+    </div>
+
+    <!-- AUDITORÍA -->
+    <div class="admin-section">
+        <p class="section-title">📋 Auditoría</p>
+        <p class="audit-text">Las acciones administrativas se registran automáticamente.</p>
+        <p class="audit-sub">Todos los cambios en usuarios, roles y configuración quedan registrados con fecha, hora y autor.</p>
+    </div>
+
+</div>
+
+<script src="/js/admin.js"></script>
+</body>
+</html>

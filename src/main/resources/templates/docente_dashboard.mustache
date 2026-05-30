@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Docente</title>
+    <link rel="stylesheet" href="/css/login-style.css">
+    <link rel="stylesheet" href="https://unicons.iconscout.com/release/v4.0.0/css/line.css">
+    <link rel="stylesheet" href="/css/style-dashboard.css">
+</head>
+<body>
+<div class="dashboard-container">
+
+    <!-- HEADER -->
+    <div class="dashboard-header">
+        <div class="header-left">
+            <div class="header-icon"><i class="uil uil-book-reader"></i></div>
+            <div>
+                <h1>Panel Docente</h1>
+                <span class="role-badge">Docente</span>
+            </div>
+        </div>
+        <div class="user-info">
+            <div class="email">{{email}}</div>
+            <div class="role-text">Sesión activa</div>
+            <a href="/logout" class="logout-btn">Cerrar sesión</a>
+        </div>
+    </div>
+
+    <!-- ACCIONES -->
+    <div class="dashboard-section">
+        <p class="section-title">📚 Mis acciones</p>
+        <div class="actions-grid">
+            <a href="/docente/list" class="action-card">
+                <i class="uil uil-users-alt"></i>
+                <span class="card-title">Listar docentes</span>
+                <span class="card-desc">Ver el padrón completo de profesores registrados</span>
+            </a>
+            <a href="/en_construccion?from=/docente" class="action-card">
+                <i class="uil uil-file-upload-alt"></i>
+                <span class="card-title">Completar perfil</span>
+                <span class="card-desc">Cargar y actualizar tus datos personales y académicos</span>
+            </a>
+            <a href="/docente/comisiones" class="action-card">
+                <i class="uil uil-book"></i>
+                <span class="card-title">Mis comisiones</span>
+                <span class="card-desc">Ver tus comisiones asignadas en el período activo</span>
+            </a>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

@@ -1,3 +1,9 @@
 # Default ignored files
 /shelf/
 /workspace.xml
+
+# Archivos generados por Maven
+/target/
+
+# Archivos de Base de Datos local
+*.db

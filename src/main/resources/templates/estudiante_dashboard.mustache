@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Estudiante</title>
+    <link rel="stylesheet" href="/css/login-style.css">
+    <link rel="stylesheet" href="https://unicons.iconscout.com/release/v4.0.0/css/line.css">
+    <link rel="stylesheet" href="/css/style-dashboard.css">
+</head>
+<body>
+<div class="dashboard-container">
+
+    <!-- HEADER -->
+    <div class="dashboard-header">
+        <div class="header-left">
+            <div class="header-icon"><i class="uil uil-graduation-cap"></i></div>
+            <div>
+                <h1>Panel Estudiante</h1>
+                <span class="role-badge">Estudiante</span>
+            </div>
+        </div>
+        <div class="user-info">
+            <div class="email">{{email}}</div>
+            <div class="role-text">Sesión activa</div>
+            <a href="/logout" class="logout-btn">Cerrar sesión</a>
+        </div>
+    </div>
+
+    <!-- ACCIONES -->
+    <div class="dashboard-section">
+        <p class="section-title">🎓 Mis acciones</p>
+        <div class="actions-grid">
+            <a href="/en_construccion?from=/estudiante" class="action-card">
+                <i class="uil uil-book"></i>
+                <span class="card-title">Mis cursos</span>
+                <span class="card-desc">Ver las materias en las que estás inscripto</span>
+            </a>
+            <a href="/en_construccion?from=/estudiante" class="action-card">
+                <i class="uil uil-user-circle"></i>
+                <span class="card-title">Ver perfil</span>
+                <span class="card-desc">Consultá y editá tus datos personales</span>
+            </a>
+            <a href="/logout" class="action-card logout-card">
+                <i class="uil uil-signout"></i>
+                <span class="card-title">Cerrar sesión</span>
+                <span class="card-desc">Salir de tu cuenta de forma segura</span>
+            </a>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

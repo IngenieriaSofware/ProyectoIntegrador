@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asignar Docente — {{comisionNombre}}</title>
+    <link rel="stylesheet" href="/css/login-style.css">
+    <link rel="stylesheet" href="https://unicons.iconscout.com/release/v4.0.0/css/line.css">
+    <link rel="stylesheet" href="/css/style-dashboard.css">
+    <style>
+        .form-group { margin-bottom: 18px; }
+        .form-group label { display:block; font-size:13px; font-weight:600; color:#374151; margin-bottom:6px; }
+        .form-group input, .form-group select {
+            width:100%; padding:10px 14px; border:1.5px solid #d1d5db; border-radius:8px;
+            font-size:14px; outline:none; box-sizing:border-box;
+        }
+        .form-group input:focus, .form-group select:focus { border-color:#2563eb; }
+        .hint { font-size:11.5px; color:#6b7280; margin-top:4px; }
+        .btn-primary { background:#2563eb;color:#fff;padding:10px 22px;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer; }
+        .btn-secondary { background:#f1f5f9;color:#374151;padding:10px 18px;border:1px solid #e2e8f0;border-radius:8px;font-size:14px;text-decoration:none;display:inline-block; }
+        .btn-search { background:#374151;color:#fff;padding:10px 18px;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer; }
+        .result-row { display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid #f1f5f9;font-size:13px; }
+        .result-row:hover { background:#f8fafc; }
+        .result-radio { margin-right:12px; }
+        .info-box { background:#eff6ff;border:1px solid #bfdbfe;color:#1e40af;padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:14px; }
+    </style>
+</head>
+<body>
+<div class="admin-container">
+
+    <div class="admin-header">
+        <div class="header-left">
+            <div class="header-icon"><i class="uil uil-user-plus"></i></div>
+            <div>
+                <h1>Asignar Docente</h1>
+                <span class="role-badge">{{materiaNombre}}</span>
+            </div>
+        </div>
+        <div class="user-info">
+            <div class="email">{{email}}</div>
+            <a href="/admin/comisiones/{{comisionId}}" class="logout-btn">← Volver</a>
+        </div>
+    </div>
+
+    {{#errorMessage}}
+    <div style="background:#fee2e2;color:#991b1b;padding:12px 18px;border-radius:8px;margin-bottom:16px;">{{errorMessage}}</div>
+    {{/errorMessage}}
+
+    <div class="admin-section" style="max-width:640px;">
+
+        <!-- Paso 1: Buscar docente -->
+        <p class="section-title">Paso 1 — Buscar docente</p>
+        <form method="get" action="/admin/comisiones/{{comisionId}}/asignaciones/nueva"
+              style="display:flex;gap:10px;margin-bottom:20px;">
+            <input type="text" name="q" value="{{q}}" placeholder="Nombre, apellido o DNI..."
+                   style="flex:1;padding:10px 14px;border:1.5px solid #d1d5db;border-radius:8px;font-size:14px;">
+            <button type="submit" class="btn-search">Buscar</button>
+        </form>
+
+        {{#sinResultados}}
+        <div style="color:#6b7280;font-size:13px;margin-bottom:16px;">
+            No se encontraron docentes con "{{q}}". Intente con otro término.
+        </div>
+        {{/sinResultados}}
+
+        <!-- Paso 2: Seleccionar docente + cargo y confirmar -->
+        {{#hayResultados}}
+        <form action="/admin/comisiones/{{comisionId}}/asignaciones/nueva" method="post">
+
+            <p class="section-title">Paso 2 — Seleccionar docente y cargo</p>
+            <div style="border:1px solid #e2e8f0;border-radius:8px;margin-bottom:18px;">
+                {{#resultadosBusqueda}}
+                <label class="result-row" style="cursor:pointer;">
+                    <span>
+                        <input type="radio" name="docenteId" value="{{docenteId}}" class="result-radio" required>
+                        <strong>{{apellido}}, {{nombre}}</strong>
+                        <span style="color:#6b7280;margin-left:8px;">DNI: {{dni}}</span>
+                        <span style="color:#9ca3af;margin-left:8px;font-size:12px;">{{email}}</span>
+                    </span>
+                </label>
+                {{/resultadosBusqueda}}
+            </div>
+
+            <div class="form-group">
+                <label for="cargo">Cargo *</label>
+                <select id="cargo" name="cargo" required>
+                    <option value="">— Seleccionar cargo —</option>
+                    <option value="TITULAR">Titular (puede cargar notas y cerrar acta)</option>
+                    <option value="JTP">JTP (puede cargar notas, no puede cerrar acta)</option>
+                    <option value="AYUDANTE">Ayudante (solo consulta)</option>
+                </select>
+                <div class="hint">RN-05: Solo puede haber un Titular por comisión.</div>
+            </div>
+
+            <div style="display:flex;gap:12px;margin-top:24px;">
+                <button type="submit" class="btn-primary">Confirmar asignación</button>
+                <a href="/admin/comisiones/{{comisionId}}" class="btn-secondary">Cancelar</a>
+            </div>
+        </form>
+        {{/hayResultados}}
+
+        {{^hayResultados}}
+        {{^sinResultados}}
+        <div style="text-align:center;padding:30px;color:#9ca3af;font-size:13px;">
+            Ingrese un nombre, apellido o DNI para buscar docentes disponibles.
+        </div>
+        {{/sinResultados}}
+        {{/hayResultados}}
+
+    </div>
+</div>
+</body>
+</html>

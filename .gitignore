@@ -22,3 +22,15 @@
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
 replay_pid*
+
+# Archivos de IDE
+.idea/
+
+# Archivos generados por Maven
+/target/
+
+# Archivo de DB erróneo en la raíz
+/dev.db
+
+# Carpeta de base de datos
+/db/

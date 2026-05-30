@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{nombre}} — Detalle</title>
+    <link rel="stylesheet" href="/css/login-style.css">
+    <link rel="stylesheet" href="https://unicons.iconscout.com/release/v4.0.0/css/line.css">
+    <link rel="stylesheet" href="/css/style-dashboard.css">
+    <style>
+        .badge-activa   { background:#d1fae5;color:#065f46;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600; }
+        .badge-cerrada  { background:#fee2e2;color:#991b1b;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600; }
+        .badge-titular  { background:#dbeafe;color:#1e40af;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:700; }
+        .badge-jtp      { background:#fef3c7;color:#92400e;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:700; }
+        .badge-ayudante { background:#f3f4f6;color:#374151;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:700; }
+        .btn { padding:7px 14px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;border:none;display:inline-block;text-decoration:none; }
+        .btn-primary   { background:#2563eb;color:#fff; }
+        .btn-warning   { background:#d97706;color:#fff; }
+        .btn-danger    { background:#dc2626;color:#fff; }
+        .btn-secondary { background:#f1f5f9;color:#374151;border:1px solid #e2e8f0; }
+        .info-row  { display:flex;gap:8px;margin-bottom:8px;font-size:14px; }
+        .info-label{ font-weight:600;color:#374151;min-width:130px; }
+        .info-val  { color:#6b7280; }
+        .warn-box  { background:#fffbeb;border:1px solid #fbbf24;color:#92400e;padding:10px 14px;border-radius:8px;margin-bottom:14px;font-size:13px; }
+        table.asig { width:100%;border-collapse:collapse;margin-top:12px; }
+        table.asig th { text-align:left;padding:9px 14px;background:#f8fafc;border-bottom:2px solid #e2e8f0;font-size:13px; }
+        table.asig td { padding:9px 14px;border-bottom:1px solid #f1f5f9;font-size:13px;vertical-align:middle; }
+        .actions-cell { display:flex;gap:6px;flex-wrap:wrap; }
+    </style>
+</head>
+<body>
+<div class="admin-container">
+
+    <div class="admin-header">
+        <div class="header-left">
+            <div class="header-icon"><i class="uil uil-users-alt"></i></div>
+            <div>
+                <h1>{{materiaNombre}}</h1>
+                <span class="role-badge">{{materiaCodigo}} · Plan {{anioVigencia}} · {{turnoLabel}} · {{periodoLabel}}</span>
+            </div>
+        </div>
+        <div class="user-info">
+            <div class="email">{{email}}</div>
+            <a href="/admin/comisiones" class="logout-btn">← Volver</a>
+        </div>
+    </div>
+
+    {{#successMessage}}
+    <div style="background:#d1fae5;color:#065f46;padding:12px 18px;border-radius:8px;margin-bottom:16px;">{{successMessage}}</div>
+    {{/successMessage}}
+    {{#errorMessage}}
+    <div style="background:#fee2e2;color:#991b1b;padding:12px 18px;border-radius:8px;margin-bottom:16px;">{{errorMessage}}</div>
+    {{/errorMessage}}
+
+    {{#cerrada}}
+    <div class="warn-box">
+        ⚠️ El acta de esta comisión está <strong>cerrada</strong>. No se pueden eliminar asignaciones de docentes.
+    </div>
+    {{/cerrada}}
+
+    <!-- Info -->
+    <div class="admin-section">
+        <p class="section-title">Información</p>
+        <div class="info-row"><span class="info-label">Materia:</span><span class="info-val">{{materiaCodigo}} — {{materiaNombre}}</span></div>
+        <div class="info-row"><span class="info-label">Carrera / Plan:</span><span class="info-val">{{carreraNombre}} — Plan {{anioVigencia}}</span></div>
+        <div class="info-row"><span class="info-label">Período:</span><span class="info-val">{{periodoDesc}}</span></div>
+        <div class="info-row"><span class="info-label">Turno:</span><span class="info-val">{{turnoLabel}}</span></div>
+        <div class="info-row">
+            <span class="info-label">Estado:</span>
+            <span class="info-val">
+                {{#activa}}<span class="badge-activa">Activa</span>{{/activa}}
+                {{^activa}}<span class="badge-cerrada">Cerrada</span>{{/activa}}
+            </span>
+        </div>
+
+        {{#activa}}
+        <div style="margin-top:16px;">
+            <form action="/admin/comisiones/{{id}}/cerrar" method="post" style="display:inline;">
+                <button type="submit" class="btn btn-danger"
+                    onclick="return confirm('¿Cerrar esta comisión? Las asignaciones de docentes no podrán eliminarse una vez cerrada.')">
+                    Cerrar comisión
+                </button>
+            </form>
+        </div>
+        {{/activa}}
+    </div>
+
+    <!-- Docentes asignados (D.1) -->
+    <div class="admin-section">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+            <p class="section-title" style="margin:0;">Docentes asignados</p>
+            {{#puedeAsignar}}
+            <a href="/admin/comisiones/{{id}}/asignaciones/nueva" class="btn btn-primary">+ Asignar Docente</a>
+            {{/puedeAsignar}}
+        </div>
+
+        <table class="asig">
+            <thead>
+                <tr>
+                    <th>Docente</th>
+                    <th>DNI</th>
+                    <th>Cargo</th>
+                    <th>Permisos sobre acta</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#asignaciones}}
+                <tr>
+                    <td><strong>{{docenteNombre}}</strong></td>
+                    <td style="color:#6b7280;">{{docenteDni}}</td>
+                    <td>
+                        {{#activa}}
+                        <span class="{{#cargoLabel}}{{/cargoLabel}}
+                            {{^activa}}badge-ayudante{{/activa}}
+                            " style="
+                            background:{{#esTitularStyle}}#dbeafe{{/esTitularStyle}};
+                            color:{{#esTitularStyle}}#1e40af{{/esTitularStyle}};
+                            padding:2px 8px;border-radius:12px;font-size:11px;font-weight:700;">
+                            {{cargoLabel}}
+                        </span>
+                        {{/activa}}
+                    </td>
+                    <td style="font-size:12px;color:#6b7280;">
+                        {{cargoLabel}}
+                    </td>
+                    <td>
+                        <div class="actions-cell">
+                            {{#activa}}
+                            <a href="/admin/comisiones/{{comisionId}}/asignaciones/{{id}}/cargo"
+                               class="btn btn-secondary">Cambiar cargo</a>
+                            {{^cerrada}}
+                            <form action="/admin/comisiones/{{comisionId}}/asignaciones/{{id}}/baja" method="post" style="display:inline;">
+                                <button type="submit" class="btn btn-danger"
+                                    onclick="return confirm('¿Eliminar la asignación de {{docenteNombre}}?')">
+                                    Dar de baja
+                                </button>
+                            </form>
+                            {{/cerrada}}
+                            {{/activa}}
+                        </div>
+                    </td>
+                </tr>
+                {{/asignaciones}}
+                {{^asignaciones}}
+                <tr>
+                    <td colspan="5" style="text-align:center;padding:30px;color:#6b7280;">
+                        No hay docentes asignados.
+                        {{#puedeAsignar}}<a href="/admin/comisiones/{{id}}/asignaciones/nueva" style="color:#2563eb;">Asignar el primero</a>.{{/puedeAsignar}}
+                    </td>
+                </tr>
+                {{/asignaciones}}
+            </tbody>
+        </table>
+    </div>
+
+</div>
+</body>
+</html>

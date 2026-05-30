@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nuevo Período Lectivo</title>
+    <link rel="stylesheet" href="/css/login-style.css">
+    <link rel="stylesheet" href="https://unicons.iconscout.com/release/v4.0.0/css/line.css">
+    <link rel="stylesheet" href="/css/style-dashboard.css">
+    <style>
+        .form-group { margin-bottom: 18px; }
+        .form-group label { display:block; font-size:13px; font-weight:600; color:#374151; margin-bottom:6px; }
+        .form-group input, .form-group select, .form-group textarea {
+            width:100%; padding:10px 14px; border:1.5px solid #d1d5db; border-radius:8px;
+            font-size:14px; outline:none; box-sizing:border-box;
+        }
+        .form-group input:focus, .form-group select:focus { border-color:#2563eb; }
+        .hint { font-size:11.5px; color:#6b7280; margin-top:4px; }
+        .btn-primary { background:#2563eb;color:#fff;padding:10px 22px;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer; }
+        .btn-secondary { background:#f1f5f9;color:#374151;padding:10px 18px;border:1px solid #e2e8f0;border-radius:8px;font-size:14px;text-decoration:none;display:inline-block; }
+    </style>
+</head>
+<body>
+<div class="admin-container">
+
+    <div class="admin-header">
+        <div class="header-left">
+            <div class="header-icon"><i class="uil uil-calender"></i></div>
+            <div>
+                <h1>Nuevo Período Lectivo</h1>
+                <span class="role-badge">Módulo B.1</span>
+            </div>
+        </div>
+        <div class="user-info">
+            <div class="email">{{email}}</div>
+            <a href="/admin/periodos" class="logout-btn">← Volver</a>
+        </div>
+    </div>
+
+    {{#errorMessage}}
+    <div style="background:#fee2e2;color:#991b1b;padding:12px 18px;border-radius:8px;margin-bottom:16px;">{{errorMessage}}</div>
+    {{/errorMessage}}
+
+    <div class="admin-section" style="max-width:480px;">
+        <form action="/admin/periodos/nuevo" method="post">
+            <div class="form-group">
+                <label for="anio">Año *</label>
+                <input type="number" id="anio" name="anio" min="2000" max="2100" required placeholder="Ej: 2026">
+            </div>
+            <div class="form-group">
+                <label for="cuatrimestre">Cuatrimestre *</label>
+                <select id="cuatrimestre" name="cuatrimestre" required>
+                    <option value="">— Seleccionar —</option>
+                    <option value="1">Primer Cuatrimestre</option>
+                    <option value="2">Segundo Cuatrimestre</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="descripcion">Descripción (opcional)</label>
+                <input type="text" id="descripcion" name="descripcion" maxlength="200"
+                       placeholder="Ej: 2026 — Primer Cuatrimestre">
+                <div class="hint">Si se deja vacío, se genera automáticamente.</div>
+            </div>
+            <div style="display:flex;gap:12px;margin-top:24px;">
+                <button type="submit" class="btn-primary">Crear período</button>
+                <a href="/admin/periodos" class="btn-secondary">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>
+</body>
+</html>
