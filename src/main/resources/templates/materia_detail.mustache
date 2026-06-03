@@ -24,6 +24,11 @@
         table.asoc th { text-align:left;padding:9px 14px;background:#f8fafc;border-bottom:2px solid #e2e8f0;font-size:13px; }
         table.asoc td { padding:9px 14px;border-bottom:1px solid #f1f5f9;font-size:13px;vertical-align:middle; }
         .actions-cell { display:flex;gap:6px;flex-wrap:wrap; }
+        
+        .corr-plan-container { background: #fafafa; border-left: 4px solid #4b5563; padding: 16px; margin-top: 12px; border-radius: 0 8px 8px 0; }
+        .corr-tables-layout { display: flex; gap: 16px; margin-top: 12px; flex-wrap: wrap; }
+        .corr-column { flex: 1; min-width: 280px; background: #ffffff; padding: 12px; border: 1px solid #e2e8f0; border-radius: 6px; }
+        .corr-title { font-size: 12px; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; display: flex; align-items: center; gap: 4px; }
     </style>
 </head>
 <body>
@@ -50,7 +55,6 @@
     <div style="background:#fee2e2;color:#991b1b;padding:12px 18px;border-radius:8px;margin-bottom:16px;">{{errorMessage}}</div>
     {{/errorMessage}}
 
-    <!-- Datos de la materia -->
     <div class="admin-section">
         <p class="section-title">Información</p>
         <div class="info-row"><span class="info-label">Código:</span><span class="info-val">{{codigo}}</span></div>
@@ -71,7 +75,7 @@
             <a href="/admin/materias/{{id}}/editar" class="btn btn-primary">Editar</a>
             {{#activa}}
             <form action="/admin/materias/{{id}}/desactivar" method="post" style="display:inline;">
-                <button type="submit" class="btn btn-danger"
+                <button type="submit" class="btn btn-warning"
                     onclick="return confirm('¿Desactivar esta materia? Continuará habiendo asociaciones activas vigentes si existen.')">
                     Desactivar
                 </button>
@@ -88,69 +92,168 @@
         </div>
     </div>
 
-    <!-- Asociaciones a planes -->
     <div class="admin-section">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
-            <p class="section-title" style="margin:0;">Asociaciones a Planes de Estudio</p>
+            <p class="section-title" style="margin:0;">Asociaciones a Planes de Estudio y Correlatividades</p>
             {{#activa}}
             <a href="/admin/materias/{{id}}/planes/nueva" class="btn btn-primary" style="font-size:13px;">+ Asociar a Plan</a>
             {{/activa}}
         </div>
 
-        <table class="asoc">
-            <thead>
-                <tr>
-                    <th>Carrera</th>
-                    <th>Plan</th>
-                    <th>Año en plan</th>
-                    <th>Cuatrimestre</th>
-                    <th>Carga horaria</th>
-                    <th>Carácter</th>
-                    <th>Estado</th>
-                    <th>Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                {{#asociaciones}}
-                <tr>
-                    <td><strong>{{carreraCodigo}}</strong> {{carreraNombre}}</td>
-                    <td>Plan {{anioVigencia}}</td>
-                    <td style="color:#6b7280;">Año {{anioPlan}}</td>
-                    <td style="color:#6b7280;">{{cuatrimestreLabel}}</td>
-                    <td style="color:#6b7280;">{{cargaHoraria}} h/sem</td>
-                    <td style="color:#6b7280;">{{caracterLabel}}</td>
-                    <td>
-                        {{#activa}}<span class="badge-activa">Activa</span>{{/activa}}
-                        {{^activa}}<span class="badge-inactiva">Inactiva</span>{{/activa}}
-                    </td>
-                    <td>
-                        <div class="actions-cell">
-                            {{#activa}}
-                            <a href="/admin/materias/{{materiaId}}/planes/{{id}}/editar" class="btn btn-secondary">Editar</a>
-                            <form action="/admin/materias/{{materiaId}}/planes/{{id}}/desactivar" method="post" style="display:inline;">
-                                <button type="submit" class="btn btn-danger"
-                                    onclick="return confirm('¿Desactivar esta asociación? Solo es posible si no existen cursadas registradas.')">
-                                    Desactivar
-                                </button>
-                            </form>
-                            {{/activa}}
-                            {{^activa}}
-                            <span style="color:#9ca3af;font-size:12px;">Inactiva</span>
-                            {{/activa}}
+        {{#asociaciones}}
+        <div style="border: 1px solid #e2e8f0; padding: 16px; border-radius: 8px; margin-bottom: 20px; background: #ffffff;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px;">
+                <div>
+                    <h3 style="margin: 0 0 6px 0; font-size: 16px; color: #1e293b;">
+                        <strong>{{carreraCodigo}}</strong> — {{carreraNombre}}
+                    </h3>
+                    <div style="display: flex; gap: 12px; font-size: 13px; color: #64748b;">
+                        <span><i class="uil uil-calendar-alt"></i> Plan {{anioVigencia}}</span>
+                        <span>•</span>
+                        <span>Año en plan: <strong>{{anioPlan}}° Año</strong></span>
+                        <span>•</span>
+                        <span>Cuatrimestre: <strong>{{cuatrimestreLabel}}</strong></span>
+                        <span>•</span>
+                        <span>Carga: <strong>{{cargaHoraria}} h/sem</strong></span>
+                        <span>•</span>
+                        <span>Carácter: <strong>{{caracterLabel}}</strong></span>
+                        <span>•</span>
+                        <span>Estado: {{#activa}}<span class="badge-activa" style="padding: 1px 6px; font-size: 11px;">Activa</span>{{/activa}}{{^activa}}<span class="badge-inactiva" style="padding: 1px 6px; font-size: 11px;">Inactiva</span>{{/activa}}</span>
+                    </div>
+                </div>
+                
+                <div class="actions-cell">
+                    {{#activa}}
+                    <a href="/admin/materias/{{materiaId}}/planes/{{id}}/editar" class="btn btn-secondary" style="padding: 5px 12px; font-size: 12px;">Editar Plan</a>
+                    <form action="/admin/materias/{{materiaId}}/planes/{{id}}/desactivar" method="post" style="display:inline;">
+                        <button type="submit" class="btn btn-warning" style="padding: 5px 12px; font-size: 12px;"
+                            onclick="return confirm('¿Desactivar esta asociación? Solo es posible si no existen cursadas registradas.')">
+                            Desactivar
+                        </button>
+                    </form>
+                    {{/activa}}
+                    {{^activa}}
+                    <form action="/admin/materias/{{materiaId}}/planes/{{id}}/reactivar" method="post" style="display:inline;">
+                        <button type="submit" class="btn btn-success" style="padding: 5px 12px; font-size: 12px;"
+                            onclick="return confirm('¿Reactivar esta asociación a plan de estudio?')">
+                            Reactivar
+                        </button>
+                    </form>
+                    {{/activa}}
+                    <form action="/admin/materias/{{materiaId}}/planes/{{id}}/eliminar" method="post" style="display:inline;">
+                        <button type="submit" class="btn btn-danger" style="padding: 5px 12px; font-size: 12px;"
+                            onclick="return confirm('¡ATENCIÓN! ¿Borrar definitivamente esta asociación? Se eliminarán las correlatividades previas y posteriores relacionadas. NO se puede deshacer.')">
+                            Eliminar Definitivamente
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="corr-plan-container">
+                <div class="corr-tables-layout">
+                    
+                    <div class="corr-column">
+                        <div class="corr-title"><i class="uil uil-arrow-circle-left" style="color: #0284c7;"></i> Materias Correlativas Previas</div>
+                        <table class="asoc" style="margin-top: 4px;">
+                            <thead>
+                                <tr>
+                                    <th>Materia</th>
+                                    <th>Condición</th>
+                                    <th style="text-align: right;">Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {{#anteriores}}
+                                <tr>
+                                    <td><code>[{{codigo}}]</code> <strong>{{nombre}}</strong></td>
+                                    <td><span class="badge-activa" style="background: #e0f2fe; color: #0369a1; padding: 2px 6px; font-size: 11px;">{{condicionLabel}}</span></td>
+                                    <td style="text-align: right;">
+                                        {{#activa}}
+                                        <form action="/admin/materias/{{materiaId}}/correlatividades/{{id}}/eliminar" method="post" style="display:inline;">
+                                            <button type="submit" class="btn btn-danger" style="padding: 2px 6px; font-size: 11px;"
+                                                onclick="return confirm('¿Quitar esta regla de correlatividad para este plan?')">
+                                                Quitar
+                                            </button>
+                                        </form>
+                                        {{/activa}}
+                                        {{^activa}}
+                                        <span style="color:#9ca3af;font-size:11px;">—</span>
+                                        {{/activa}}
+                                    </td>
+                                </tr>
+                                {{/anteriores}}
+                                {{^anteriores}}
+                                <tr><td colspan="3" style="text-align:center; color:#94a3b8; font-size: 12px; padding: 12px;">No tiene requisitos previos configurados en este plan.</td></tr>
+                                {{/anteriores}}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="corr-column">
+                        <div class="corr-title"><i class="uil uil-arrow-circle-right" style="color: #b45309;"></i> Materias a las que habilita</div>
+                        <table class="asoc" style="margin-top: 4px;">
+                            <thead>
+                                <tr>
+                                    <th>Materia</th>
+                                    <th>Exigencia</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {{#posteriores}}
+                                <tr>
+                                    <td><code>[{{codigo}}]</code> <strong>{{nombre}}</strong></td>
+                                    <td>Debe estar <span class="badge-activa" style="background: #fef3c7; color: #d97706; padding: 2px 6px; font-size: 11px;">{{condicionLabel}}</span></td>
+                                </tr>
+                                {{/posteriores}}
+                                {{^posteriores}}
+                                <tr><td colspan="2" style="text-align:center; color:#94a3b8; font-size: 12px; padding: 12px;">No habilita a ninguna materia posterior todavía.</td></tr>
+                                {{/posteriores}}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                {{#activa}}
+                <form action="/admin/materias/{{materiaId}}/correlatividades/nueva" method="post" style="margin-top: 14px; padding-top: 12px; border-top: 1px dashed #e2e8f0;">
+                    <input type="hidden" name="destinoMateriaPlanId" value="{{id}}">
+                    
+                    <div style="display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap;">
+                        <div style="flex: 2; min-width: 180px;">
+                            <label class="info-label" style="display: block; margin-bottom: 4px; font-size: 12px; color: #475569;">Agregar Requisito del mismo Plan:</label>
+                            <select name="materiaOrigenMpId" required style="width: 100%; padding: 6px; border-radius: 5px; border: 1px solid #cbd5e1; font-size: 12px; color: #334155;">
+                                <option value="">-- Seleccionar Materia Requisito --</option>
+                                {{#materiasDisponibles}}
+                                    <option value="{{mp_id}}">[{{codigo}}] {{nombre}}</option>
+                                {{/materiasDisponibles}}
+                            </select>
                         </div>
-                    </td>
-                </tr>
-                {{/asociaciones}}
-                {{^asociaciones}}
-                <tr>
-                    <td colspan="8" style="text-align:center;padding:30px;color:#6b7280;">
-                        No hay asociaciones a planes.
-                        {{#activa}}<a href="/admin/materias/{{id}}/planes/nueva" style="color:#2563eb;">Agregar la primera</a>.{{/activa}}
-                    </td>
-                </tr>
-                {{/asociaciones}}
-            </tbody>
-        </table>
+
+                        <div style="flex: 1; min-width: 120px;">
+                            <label class="info-label" style="display: block; margin-bottom: 4px; font-size: 12px; color: #475569;">Condición:</label>
+                            <select name="condicion" required style="width: 100%; padding: 6px; border-radius: 5px; border: 1px solid #cbd5e1; font-size: 12px; color: #334155;">
+                                <option value="REGULAR">REGULAR</option>
+                                <option value="APROBADA">APROBADA</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <button type="submit" class="btn btn-success" style="padding: 7px 14px; font-size: 12px;">
+                                Vincular Requisito
+                            </button>
+                        </div>
+                    </div>
+                </form>
+                {{/activa}}
+            </div>
+        </div>
+        {{/asociaciones}}
+        
+        {{^asociaciones}}
+        <div style="text-align:center; padding:30px; color:#6b7280; font-size: 13px;">
+            La materia no está asociada a ningún plan de estudio. 
+            {{#activa}}<a href="/admin/materias/{{id}}/planes/nueva" style="color:#2563eb; font-weight:600;">Asociar al primer plan</a> para gestionar sus correlatividades.{{/activa}}
+        </div>
+        {{/asociaciones}}
     </div>
 
 </div>

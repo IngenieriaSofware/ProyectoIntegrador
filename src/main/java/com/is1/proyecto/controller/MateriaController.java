@@ -8,6 +8,7 @@ import java.util.Map;
 
 import com.is1.proyecto.service.AuditService;
 import com.is1.proyecto.service.MateriaService;
+import com.is1.proyecto.service.CorrelatividadService;
 
 import spark.ModelAndView;
 import spark.Request;
@@ -16,6 +17,7 @@ import spark.Response;
 public class MateriaController {
 
     private final MateriaService materiaService = new MateriaService();
+    private final CorrelatividadService correlatividadService = new CorrelatividadService();
 
     // ── AUTH HELPERS ─────────────────────────────────────────────
 
@@ -100,6 +102,20 @@ public class MateriaController {
         if (model == null) {
             res.redirect("/admin/materias?error=" + encode("Materia no encontrada."));
             return null;
+        }
+
+        List<Map<String, Object>> asociaciones = (List<Map<String, Object>>) model.get("asociaciones");
+        if (asociaciones != null) {
+            for (Map<String, Object> asoc : asociaciones) {
+                int mpId = ((Number) asoc.get("id")).intValue();
+                
+                Map<String, Object> datosGrafo = correlatividadService.getCorrelatividadesDelPlan(mpId);
+                asoc.put("anteriores", datosGrafo.get("anteriores"));
+                asoc.put("posteriores", datosGrafo.get("posteriores"));
+
+                List<Map> materiasFiltradas = materiaService.listarMateriasDisponiblesParaCorrelativas(mpId, id);
+                asoc.put("materiasDisponibles", materiasFiltradas);
+            }
         }
 
         model.put("email", req.session().attribute("email"));
@@ -299,7 +315,87 @@ public class MateriaController {
         if ((Boolean) result.get("success")) {
             AuditService.log(adminId(req), "DESACTIVAR_ASOCIACION", mpId,
                 "Asociación desactivada para materia " + materiaId);
-            res.redirect("/admin/materias/" + materiaId + "?message=" + encode("Asociación desactivada correctamente."));
+            res.redirect("/admin/materias/" + materiaId + "?message=" + encode((String) result.get("message")));
+        } else {
+            res.redirect("/admin/materias/" + materiaId + "?error=" + encode((String) result.get("message")));
+        }
+        return "";
+    }
+
+// ── REACTIVAR ASOCIACIÓN ────────────────────────────────────
+
+    public Object reactivarAsociacion(Request req, Response res) {
+        if (!esAdmin(req)) { res.redirect("/?error=" + encode("Acceso no autorizado")); return null; }
+
+        int materiaId = parseInt(req.params("id"));
+        int mpId = parseInt(req.params("mpId"));
+
+        Map<String, Object> result = materiaService.reactivarAsociacion(mpId);
+
+        if ((Boolean) result.get("success")) {
+            AuditService.log(adminId(req), "REACTIVAR_ASOCIACION", mpId,
+                "Asociación reactivada para materia " + materiaId);
+            res.redirect("/admin/materias/" + materiaId + "?message=" + encode("Asociación reactivada correctamente."));
+        } else {
+            res.redirect("/admin/materias/" + materiaId + "?error=" + encode((String) result.get("message")));
+        }
+        return "";
+    }
+
+// ── ELIMINAR ASOCIACIÓN ────────────────────────────────────
+
+    public Object eliminarAsociacionDefinitiva(Request req, Response res) {
+        if (!esAdmin(req)) { res.redirect("/?error=" + encode("Acceso no autorizado")); return null; }
+
+        int materiaId = parseInt(req.params("id"));
+        int mpId = parseInt(req.params("mpId"));
+
+        Map<String, Object> result = materiaService.eliminarAsociacionDefinitiva(mpId);
+
+        if ((Boolean) result.get("success")) {
+            AuditService.log(adminId(req), "ELIMINAR_ASOCIACION_DEFINITIVA", mpId,
+                "Borrado físico de asociación y correlatividades para materia " + materiaId);
+            res.redirect("/admin/materias/" + materiaId + "?message=" + encode((String) result.get("message")));
+        } else {
+            res.redirect("/admin/materias/" + materiaId + "?error=" + encode((String) result.get("message")));
+        }
+        return "";
+    }
+
+    // ── ACCIONES DE CORRELATIVIDADES ─────────────────────────────
+
+    public Object crearCorrelatividad(Request req, Response res) {
+        if (!esAdmin(req)) { res.redirect("/?error=" + encode("Acceso no autorizado")); return null; }
+
+        int materiaId = parseInt(req.params("id")); 
+        int destinoMpId = parseIntOrDefault(req.queryParams("destinoMateriaPlanId"), 0);
+        int origenMpId = parseIntOrDefault(req.queryParams("materiaOrigenMpId"), 0);
+        String condicion = req.queryParams("condicion");
+
+        Map<String, Object> result = correlatividadService.agregarCorrelatividad(origenMpId, destinoMpId, condicion);
+
+        if ((Boolean) result.get("success")) {
+            AuditService.log(adminId(req), "CREAR_CORRELATIVIDAD", destinoMpId,
+                "Asociacion Plan ID " + destinoMpId + " ahora requiere Origen Plan ID " + origenMpId + " (" + condicion + ")");
+            res.redirect("/admin/materias/" + materiaId + "?message=" + encode((String) result.get("message")));
+        } else {
+            res.redirect("/admin/materias/" + materiaId + "?error=" + encode((String) result.get("message")));
+        }
+        return "";
+    }
+
+    public Object eliminarCorrelatividad(Request req, Response res) {
+        if (!esAdmin(req)) { res.redirect("/?error=" + encode("Acceso no autorizado")); return null; }
+
+        int materiaId = parseInt(req.params("id"));
+        int correlatividadId = parseInt(req.params("corrId"));
+
+        Map<String, Object> result = correlatividadService.eliminarCorrelatividad(correlatividadId);
+
+        if ((Boolean) result.get("success")) {
+            AuditService.log(adminId(req), "ELIMINAR_CORRELATIVIDAD", correlatividadId,
+                "Se elimino regla de correlatividad ID: " + correlatividadId);
+            res.redirect("/admin/materias/" + materiaId + "?message=" + encode((String) result.get("message")));
         } else {
             res.redirect("/admin/materias/" + materiaId + "?error=" + encode((String) result.get("message")));
         }

@@ -8,6 +8,7 @@ import java.util.Objects;
 
 import org.javalite.activejdbc.Base;
 
+import com.is1.proyecto.models.Correlatividad;
 import com.is1.proyecto.models.Materia;
 import com.is1.proyecto.models.MateriaPlan;
 import com.is1.proyecto.models.PlanDeEstudio;
@@ -393,6 +394,32 @@ public class MateriaService {
             return result;
         }
 
+        String sqlOrigen = "SELECT COUNT(*) FROM correlatividades c " +
+                           "JOIN materias_planes dest ON c.materia_plan_destino_id = dest.id " +
+                           "WHERE c.materia_plan_origen_id = ? " +
+                           "AND (? > dest.anio_plan OR (? = dest.anio_plan AND (? != 'PRIMERO' OR dest.cuatrimestre != 'SEGUNDO')))";
+
+        long rompeComoOrigen = ((Number) Base.firstCell(sqlOrigen, mpId, anioPlan, anioPlan, cuatrimestre)).longValue();
+
+        if (rompeComoOrigen > 0) {
+            result.put("success", false);
+            result.put("message", "No se puede mover la materia a esa fecha. Rompe " + rompeComoOrigen + " regla(s) donde esta materia es requisito previo. Eliminá las correlatividades primero.");
+            return result;
+        }
+
+        String sqlDestino = "SELECT COUNT(*) FROM correlatividades c " +
+                            "JOIN materias_planes orig ON c.materia_plan_origen_id = orig.id " +
+                            "WHERE c.materia_plan_destino_id = ? " +
+                            "AND (orig.anio_plan > ? OR (orig.anio_plan = ? AND (orig.cuatrimestre != 'PRIMERO' OR ? != 'SEGUNDO')))";
+
+        long rompeComoDestino = ((Number) Base.firstCell(sqlDestino, mpId, anioPlan, anioPlan, cuatrimestre)).longValue();
+
+        if (rompeComoDestino > 0) {
+            result.put("success", false);
+            result.put("message", "No se puede mover la materia a esa fecha. Rompe " + rompeComoDestino + " regla(s) de correlatividad que esta materia exige cumplir antes. Eliminá las correlatividades primero.");
+            return result;
+        }
+
         mp.setAnioPlan(anioPlan);
         mp.setCuatrimestre(cuatrimestre);
         mp.setCargaHoraria(cargaHoraria);
@@ -414,19 +441,73 @@ public class MateriaService {
             result.put("message", "Asociación no encontrada.");
             return result;
         }
-
-        // RN-08: check cursadas (stub — tabla cursadas se implementa en HU-C)
-        // Cuando se implemente: SELECT COUNT(*) FROM cursadas WHERE materia_id=? AND plan_estudio_id=?
-        // Por ahora siempre 0 cursadas.
-
+        if (!mp.isActiva()) {
+            result.put("success", false);
+            result.put("message", "La asociación ya está inactiva.");
+            return result;
+        }
         mp.setActiva(false);
+        mp.touch();
+        mp.saveIt();
+
+        long correlatividadesAfectadas = Correlatividad.count(
+            "materia_plan_origen_id = ? OR materia_plan_destino_id = ?", mpId, mpId
+        );
+
+        result.put("success", true);
+        result.put("materiaId", mp.getMateriaId());
+        result.put("planEstudioId", mp.getPlanEstudioId());
+        
+        if (correlatividadesAfectadas > 0) {
+            result.put("message", "Asociación desactivada. Atención: Esta materia forma parte de " + correlatividadesAfectadas + " regla(s) de correlatividad en este plan, las cuales han quedado sin efecto práctico. Se recomienda revisar y actualizar dichas reglas para mantener la consistencia del plan.");
+        } else {
+            result.put("message", "Asociación desactivada correctamente.");
+        }
+        
+        return result;
+    }
+
+    public Map<String, Object> reactivarAsociacion(int mpId) {
+        Map<String, Object> result = new HashMap<>();
+        MateriaPlan mp = MateriaPlan.findById(mpId);
+        if (mp == null) {
+            result.put("success", false);
+            result.put("message", "Asociación no encontrada.");
+            return result;
+        }
+        if (mp.isActiva()) {
+            result.put("success", false);
+            result.put("message", "La asociación ya está activa.");
+            return result;
+        }
+        mp.setActiva(true);
         mp.touch();
         mp.saveIt();
 
         result.put("success", true);
         result.put("materiaId", mp.getMateriaId());
         result.put("planEstudioId", mp.getPlanEstudioId());
-        result.put("message", "Asociación desactivada correctamente.");
+        result.put("message", "Asociación reactivada. Las reglas de correlatividad que involucran esta materia no se reactivan automáticamente. Se recomienda revisar y actualizar dichas reglas para mantener la consistencia del plan.");
+        return result;
+    }
+
+    public Map<String, Object> eliminarAsociacionDefinitiva(int mpId) {
+        Map<String, Object> result = new HashMap<>();
+        MateriaPlan mp = MateriaPlan.findById(mpId);
+        
+        if (mp == null) {
+            result.put("success", false);
+            result.put("message", "Asociación no encontrada.");
+            return result;
+        }
+
+        int materiaId = mp.getMateriaId();
+        Correlatividad.delete("materia_plan_origen_id = ? OR materia_plan_destino_id = ?", mpId, mpId);
+        mp.delete();
+
+        result.put("success", true);
+        result.put("materiaId", materiaId);
+        result.put("message", "La asociación y todas sus reglas de correlatividad fueron eliminadas definitivamente.");
         return result;
     }
 
@@ -518,6 +599,31 @@ public class MateriaService {
             result.add(p);
         }
         return result;
+    }
+
+    public List<Map> listarMateriasDisponiblesParaCorrelativas(int mpId, int materiaId) {
+        String sqlSelector = 
+            "SELECT DISTINCT m.nombre, mp_origen.id AS mp_id, m.codigo " +
+            "FROM materias m " +
+            "JOIN materias_planes mp_origen ON m.id = mp_origen.materia_id " +
+            "JOIN materias_planes mp_destino ON mp_origen.plan_estudio_id = mp_destino.plan_estudio_id " +
+            "WHERE mp_destino.id = ? " +      
+            "  AND m.id != ? " +              
+            "  AND m.activa = 1 " +           
+            "  AND mp_origen.activa = 1 " +   
+            "  AND mp_origen.plan_estudio_id = mp_destino.plan_estudio_id " + 
+            "  AND ( " +
+            "       mp_origen.anio_plan < mp_destino.anio_plan " + 
+            "       OR ( " +
+            "           mp_origen.anio_plan = mp_destino.anio_plan " + 
+            "           AND ( " +
+            "               mp_destino.cuatrimestre = 'SEGUNDO' AND mp_origen.cuatrimestre IN ('PRIMERO') " +
+            "           ) " +
+            "       ) " +
+            "  ) " +
+            "ORDER BY m.nombre ASC";
+
+        return Base.findAll(sqlSelector, mpId, materiaId);
     }
 
     // ── HELPERS ──────────────────────────────────────────────────
