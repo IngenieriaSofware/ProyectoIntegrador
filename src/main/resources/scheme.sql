@@ -263,6 +263,20 @@ CREATE TABLE IF NOT EXISTS materias_planes (
 );
 
 -- ========================================
+-- MÓDULO B.2 EXTENSION - CORRELATIVIDADES
+-- ========================================
+
+CREATE TABLE IF NOT EXISTS correlatividades (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    materia_plan_origen_id INTEGER NOT NULL,
+    materia_plan_destino_id INTEGER NOT NULL,
+    condicion TEXT NOT NULL CHECK(condicion IN ('APROBADA', 'REGULAR')),
+    FOREIGN KEY (materia_plan_origen_id) REFERENCES materias_planes(id) ON DELETE CASCADE,
+    FOREIGN KEY (materia_plan_destino_id) REFERENCES materias_planes(id) ON DELETE CASCADE,
+    UNIQUE (materia_plan_origen_id, materia_plan_destino_id, condicion)
+);
+
+-- ========================================
 -- MÓDULO C - INSCRIPCIÓN DE ESTUDIANTES
 -- ========================================
 
