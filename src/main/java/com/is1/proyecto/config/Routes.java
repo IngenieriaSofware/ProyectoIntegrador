@@ -158,6 +158,10 @@ public class Routes {
         get("/admin/materias/:id/planes/:mpId/editar",                           (req, res) -> materiaController.showEditAsociacionForm(req, res), templateEngine);
         post("/admin/materias/:id/planes/:mpId/editar",                          (req, res) -> materiaController.updateAsociacion(req, res));
         post("/admin/materias/:id/planes/:mpId/desactivar",                      (req, res) -> materiaController.desactivarAsociacion(req, res));
+        post("/admin/materias/:id/planes/:mpId/reactivar",                       (req, res) -> materiaController.reactivarAsociacion(req, res));
+        post("/admin/materias/:id/planes/:mpId/eliminar",                        (req, res) -> materiaController.eliminarAsociacionDefinitiva(req, res));
+        post("/admin/materias/:id/correlatividades/nueva",                       (req, res) -> materiaController.crearCorrelatividad(req, res));
+        post("/admin/materias/:id/correlatividades/:corrId/eliminar",            (req, res) -> materiaController.eliminarCorrelatividad(req, res));
 
         // ========================================
         // RUTAS: PERÍODOS LECTIVOS (B.1 ext.)
