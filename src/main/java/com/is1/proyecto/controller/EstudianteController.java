@@ -6,6 +6,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.is1.proyecto.models.Carrera;
+import com.is1.proyecto.models.Estudiante;
 import com.is1.proyecto.service.CarreraService;
 
 import spark.ModelAndView;
@@ -66,6 +68,7 @@ public class EstudianteController {
         @SuppressWarnings("unchecked")
         List<String> roles = (List<String>) req.session().attribute("roles");
         String email = req.session().attribute("email");
+        Integer personaId = (Integer) req.session().attribute("personaId");
 
         if (email == null || roles == null || !roles.contains("ESTUDIANTE")) {
             res.redirect("/?error=Acceso no autorizado");
@@ -77,6 +80,18 @@ public class EstudianteController {
         if (model == null) {
             res.redirect("/estudiante/inscripcion/carreras?error=" + encode("Carrera no encontrada o inactiva."));
             return null;
+        }
+
+        // Verificar si ya está inscripto a esta carrera
+        if (personaId != null) {
+            Estudiante estudiante = Estudiante.findByPersonaId(personaId).orElse(null);
+            if (estudiante != null && estudiante.getCarrera() != null) {
+                Carrera carreraActual = Carrera.findById(carreraId);
+                if (carreraActual != null && estudiante.getCarrera().equals(carreraActual.getNombre())) {
+                    model.put("yaInscripto", true);
+                    model.put("planEstudioActual", estudiante.getPlanEstudio());
+                }
+            }
         }
 
         model.put("email", email);

@@ -29,7 +29,6 @@
 <body>
 <div class="dashboard-container">
 
-    <!-- HEADER -->
     <div class="dashboard-header">
         <div class="header-left">
             <div class="header-icon"><i class="uil uil-book"></i></div>
@@ -45,7 +44,6 @@
         </div>
     </div>
 
-    <!-- CONTENIDO -->
     <div class="cursos-container">
         {{#successMessage}}
         <div class="alert alert-success" role="alert">
@@ -105,12 +103,16 @@
             {{/misCursos}}
         </div>
 
-        <div style="margin-top: 20px; display: flex; gap: 10px;">
+        <div style="margin-top: 20px; display: flex; gap: 10px; align-items: center;">
             <a href="/estudiante" class="logout-btn" style="text-decoration: none; display: inline-block;">← Volver al panel</a>
-            {{#misCursos}}
-            <a href="/estudiante/materias" class="logout-btn" style="text-decoration: none; display: inline-block; background: #2563eb;">Agregar más materias →</a>
-            {{/misCursos}}
         </div>
+        
+        <div style="margin-top: 30px; padding: 20px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius: 10px; text-align: center;">
+            <a href="/estudiante/materias" style="text-decoration: none; display: inline-block; padding: 14px 28px; background: white; color: #10b981; font-weight: 700; border-radius: 8px; font-size: 16px; transition: all 0.3s ease;">
+                <i class="uil uil-plus"></i> Agregar más materias
+            </a>
+        </div>
+        
     </div>
 
 </div>

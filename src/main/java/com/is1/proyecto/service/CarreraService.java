@@ -186,6 +186,15 @@ public class CarreraService {
             return result;
         }
 
+        // Validar que no esté ya inscripto a esta carrera
+        String currentCarrera = estudiante.getCarrera();
+        if (currentCarrera != null && currentCarrera.equals(carrera.getNombre()) && !currentCarrera.equals("Sin asignar")) {
+            result.put("success", false);
+            result.put("message", "Ya estás inscripto a esta carrera.");
+            result.put("alreadyEnrolled", true);
+            return result;
+        }
+
         String planLabel = "Plan " + plan.getAnioVigencia();
         if (plan.getDescripcion() != null && !plan.getDescripcion().trim().isEmpty()) {
             planLabel += " - " + plan.getDescripcion().trim();
