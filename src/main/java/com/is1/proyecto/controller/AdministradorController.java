@@ -314,4 +314,23 @@ public class AdministradorController {
         }
         return "";
     }
+
+    public ModelAndView showUsuarios(Request req, Response res) {
+
+    @SuppressWarnings("unchecked")
+    List<String> roles = (List<String>) req.session().attribute("roles");
+
+    if (roles == null || !roles.contains("ADMINISTRADOR")) {
+        res.redirect("/?error=Acceso no autorizado");
+        return null;
+    }
+
+    List<Map<String, Object>> usuarios =
+            adminService.listPersonas(1, 100);
+
+    Map<String, Object> model = new HashMap<>();
+    model.put("usuarios", usuarios);
+
+    return new ModelAndView(model, "usuarios_list.mustache");
+    }
 }

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Gestión de Usuarios</title>
+    <link rel="stylesheet" href="/css/login-style.css">
+</head>
+<body>
+
+<section class="home">
+    <div class="form_container form_container--wide">
+        <div class="form login_form">
+
+            <h2>Gestión de Usuarios</h2>
+
+            <table class="styled-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>DNI</th>
+                        <th>Nombre</th>
+                        <th>Apellido</th>
+                        <th>Email</th>
+                        <th>Roles</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {{#usuarios}}
+                    <tr>
+                        <td>{{id}}</td>
+                        <td>{{dni}}</td>
+                        <td>{{nombre}}</td>
+                        <td>{{apellido}}</td>
+                        <td>{{email}}</td>
+                        <td>{{roles}}</td>
+                    </tr>
+                    {{/usuarios}}
+                </tbody>
+            </table>
+
+            {{^usuarios}}
+            <p>No hay usuarios registrados.</p>
+            {{/usuarios}}
+
+            <div class="button-container">
+                <a href="/admin" class="button-secondary">
+                    ← Volver al panel
+                </a>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+</body>
+</html>

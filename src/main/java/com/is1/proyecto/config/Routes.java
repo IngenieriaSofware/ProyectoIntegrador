@@ -107,6 +107,11 @@ public class Routes {
         // GET /admin - Dashboard de Administrador
         get("/admin", (req, res) -> administradorController.showAdministradorDashboard(req, res), templateEngine);
 
+        //RUTA PARA MOSTRAR LISTA DE USERS
+        get("/admin/usuarios",
+        (req, res) -> administradorController.showUsuarios(req, res),
+        templateEngine);
+
         // CRUD de Personas (Usuarios)
         get("/persona/new",  (req, res) -> administradorController.showPersonaForm(req, res), templateEngine);
         post("/persona/new", (req, res) -> administradorController.createPersona(req, res));
