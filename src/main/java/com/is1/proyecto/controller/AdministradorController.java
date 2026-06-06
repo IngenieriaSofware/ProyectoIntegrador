@@ -289,20 +289,20 @@ public class AdministradorController {
             return "";
         }
 
-        String dni      = req.queryParams("dni");
-        String nombre   = req.queryParams("nombre");
-        String apellido = req.queryParams("apellido");
-        String email    = req.queryParams("email");
-        String password = req.queryParams("password");
-        String telefono = req.queryParams("telefono");
-        String localidad = req.queryParams("localidad");
+        String dni         = req.queryParams("dni");
+        String nombre      = req.queryParams("nombre");
+        String apellido    = req.queryParams("apellido");
+        String email       = req.queryParams("email");
+        String password    = req.queryParams("password");
+        String telefono    = req.queryParams("telefono");
+        String localidad   = req.queryParams("localidad");
+        String departamento = req.queryParams("departamento");
 
-        // Recibir múltiples checkboxes con el mismo name="roles"
         String[] rolesArr = req.queryParamsValues("roles");
         List<String> roles = rolesArr != null ? List.of(rolesArr) : List.of();
 
         Map<String, Object> result = userService.registerPersonaConRoles(
-            dni, nombre, apellido, email, password, telefono, localidad, roles
+            dni, nombre, apellido, email, password, telefono, localidad, roles, departamento
         );
 
         if ((Boolean) result.get("success")) {

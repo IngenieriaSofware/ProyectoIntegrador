@@ -350,6 +350,12 @@ public class UserService {
     public Map<String, Object> registerPersonaConRoles(String dni, String nombre, String apellido,
                                                     String email, String password, String telefono,
                                                     String localidad, List<String> roles) {
+        return registerPersonaConRoles(dni, nombre, apellido, email, password, telefono, localidad, roles, null);
+    }
+
+    public Map<String, Object> registerPersonaConRoles(String dni, String nombre, String apellido,
+                                                    String email, String password, String telefono,
+                                                    String localidad, List<String> roles, String departamento) {
         Map<String, Object> result = new HashMap<>();
 
         // Validaciones básicas (igual que registerPersona)
@@ -371,7 +377,6 @@ public class UserService {
         if (roles == null || roles.isEmpty()) {
             result.put("success", false); result.put("message", "Debe asignar al menos un rol."); return result;
         }
-        // Validar que los roles sean DOCENTE o ESTUDIANTE (no ADMINISTRADOR)
         for (String rol : roles) {
             if (!"DOCENTE".equals(rol) && !"ESTUDIANTE".equals(rol)) {
                 result.put("success", false);
@@ -388,7 +393,6 @@ public class UserService {
                 result.put("success", false); result.put("message", "Email ya registrado."); return result;
             }
 
-            // Crear Persona
             Persona persona = new Persona();
             persona.set("dni", dni);
             persona.set("nombre", nombre);
@@ -399,7 +403,6 @@ public class UserService {
             persona.set("localidad", localidad != null ? localidad : "");
             persona.saveIt();
 
-            // Crear perfiles y asignar roles
             for (String rol : roles) {
                 if ("ESTUDIANTE".equals(rol)) {
                     Estudiante student = new Estudiante();
@@ -412,6 +415,9 @@ public class UserService {
                     Docente professor = new Docente();
                     professor.set("persona_id", persona.getId());
                     professor.set("cargo_id", 1);
+                    if (departamento != null && !departamento.trim().isEmpty()) {
+                        professor.set("departamento", departamento.trim());
+                    }
                     professor.saveIt();
                 }
 
