@@ -100,6 +100,22 @@ telInput.addEventListener('input', () => {
     }
 });
 
+// ── DEPARTAMENTO (visible solo si DOCENTE está seleccionado) ──────────────
+const rolDocenteCheckbox  = document.getElementById('rolDocente');
+const docenteFields       = document.getElementById('docente-fields');
+const departamentoInput   = document.getElementById('departamento');
+
+function toggleDocenteFields() {
+    if (rolDocenteCheckbox.checked) {
+        docenteFields.style.display = 'block';
+    } else {
+        docenteFields.style.display = 'none';
+        departamentoInput.value = '';
+    }
+}
+
+rolDocenteCheckbox.addEventListener('change', toggleDocenteFields);
+
 // ── VALIDACIÓN DE ROLES AL SUBMIT ─────────────────────────────────────────
 const personaForm = document.getElementById('personaForm');
 const rolesHint   = document.getElementById('roles-hint');

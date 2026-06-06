@@ -89,8 +89,8 @@ public class Persona extends Model {
     public List<String> getRoleNames() {
         List<PersonaRole> roles = getRoles();
         return roles.stream()
-            .map(PersonaRole::getRol)
-            .toList();
+                .map(PersonaRole::getRol)
+                .toList();
     }
 
     /**

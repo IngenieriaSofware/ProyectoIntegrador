@@ -276,6 +276,9 @@ CREATE TABLE IF NOT EXISTS correlatividades (
     UNIQUE (materia_plan_origen_id, materia_plan_destino_id, condicion)
 );
 
+-- Agregar departamento a docentes
+ALTER TABLE docentes ADD COLUMN departamento TEXT;
+
 -- ========================================
 -- MÓDULO C - INSCRIPCIÓN DE ESTUDIANTES
 -- ========================================

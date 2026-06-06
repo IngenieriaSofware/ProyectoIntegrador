@@ -1,4 +1,13 @@
 {
   "java.configuration.updateBuildConfiguration": "interactive",
-  "java.debug.settings.onBuildFailureProceed": true
+  "java.debug.settings.onBuildFailureProceed": true,
+  "sqltools.useNodeRuntime": true,
+  "sqltools.connections": [
+    {
+      "previewLimit": 50,
+      "driver": "SQLite",
+      "database": "db/dev.db",
+      "name": "dev"
+    }
+  ]
 }

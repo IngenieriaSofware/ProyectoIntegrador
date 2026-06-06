@@ -44,6 +44,14 @@ public class Docente extends Model {
         set("periodo", periodo);
     }
 
+    public String getDepartamento() {
+        return getString("departamento");
+    }
+
+    public void setDepartamento(String departamento) {
+        set("departamento", departamento);
+    }
+
     // ============ Relaciones ============
 
     /**

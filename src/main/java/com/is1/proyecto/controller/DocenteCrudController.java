@@ -49,23 +49,27 @@ public class DocenteCrudController {
     }
 
     public Object createProfessor(Request req, Response res) {
-        String name = req.queryParams("name");
-        String email = req.queryParams("email");
-        String dni = req.queryParams("DNI");
-        String department = req.queryParams("department");
-        String phone = req.queryParams("phone");
+        String dni          = req.queryParams("dni");
+        String nombre       = req.queryParams("nombre");
+        String apellido     = req.queryParams("apellido");
+        String email        = req.queryParams("email");
+        String password     = req.queryParams("password");
+        String telefono     = req.queryParams("telefono");
+        String localidad    = req.queryParams("localidad");
+        String departamento = req.queryParams("departamento");
 
-        // Usar el servicio para crear el profesor
-        Map<String, Object> result = docenteService.createProfessor(name, email, dni, department, phone);
+        Map<String, Object> result = docenteService.createProfessor(
+            dni, nombre, apellido, email, password, telefono, localidad, departamento
+        );
 
         if ((Boolean) result.get("success")) {
             String message = (String) result.get("message");
             String encodedMsg = URLEncoder.encode(message, StandardCharsets.UTF_8);
-            res.redirect("/professor/new?message=" + encodedMsg);
+            res.redirect("/docente/new?message=" + encodedMsg);
         } else {
             String message = (String) result.get("message");
             String encodedMsg = URLEncoder.encode(message, StandardCharsets.UTF_8);
-            res.redirect("/professor/new?error=" + encodedMsg);
+            res.redirect("/docente/new?error=" + encodedMsg);
         }
 
         return null;
