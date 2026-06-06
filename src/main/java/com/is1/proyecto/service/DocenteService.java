@@ -1,5 +1,6 @@
 package com.is1.proyecto.service;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,16 +41,43 @@ public class DocenteService {
 
             int offset = (pageNumber - 1) * pageSize;
 
-            List<Map<String, Object>> professors = Docente.findAll()
+           List<Map<String, Object>> professors = new ArrayList<>();
+
+            List<Docente> docentes = Docente.findAll()
                     .limit(pageSize)
-                    .offset(offset)
-                    .toMaps();
+                    .offset(offset);
+
+            for (Docente docente : docentes) {
+
+                Map<String, Object> profesor = new HashMap<>();
+
+                profesor.put("id", docente.getId());
+
+                docente.getPersona().ifPresent(persona -> {
+                    profesor.put("name",
+                            persona.getNombre() + " " + persona.getApellido());
+
+                    profesor.put("email",
+                            persona.getEmail());
+
+                    profesor.put("phone",
+                            persona.getTelefono());
+                });
+
+                profesor.put("department",
+                        docente.getDepartamento());
+
+                professors.add(profesor);
+            }
+
+            System.out.println(professors);
 
             result.put("professors", professors);
             result.put("totalCount", totalCount);
             result.put("totalPages", totalPages);
             result.put("currentPage", pageNumber);
             result.put("pageSize", pageSize);
+
             return result;
 
         } catch (Exception e) {
