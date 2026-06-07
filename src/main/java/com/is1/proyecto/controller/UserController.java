@@ -96,8 +96,8 @@ public class UserController {
             @SuppressWarnings("unchecked")
             List<String> roles = (List<String>) authResult.get("roles");
 
-            // Establecer token en cookie httpOnly
-            res.cookie("token", token, 86400, true, true);
+            // Establecer token en cookie con Path=/ para que sea compartida en todas las rutas
+            res.header("Set-Cookie", "token=" + token + "; Path=/; Max-Age=86400; HttpOnly; SameSite=Lax");
 
             // Gestionar sesión
             req.session(true).attribute("personaId", persona.getId());
@@ -137,7 +137,8 @@ public class UserController {
      */
     public Object logout(Request req, Response res) {
         req.session().invalidate();
-        res.removeCookie("token");
+        // Limpiar cookie con Path=/ (Max-Age=0 para borrarla)
+        res.header("Set-Cookie", "token=; Path=/; Max-Age=0; HttpOnly; SameSite=Lax");
         res.redirect("/?message=Sesion cerrada exitosamente");
         return "";
     }
