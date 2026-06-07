@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nueva Acta</title>
+    <link rel="stylesheet" href="/css/login-style.css">
+    <link rel="stylesheet" href="https://unicons.iconscout.com/release/v4.0.0/css/line.css">
+    <link rel="stylesheet" href="/css/style-dashboard.css">
+</head>
+<body>
+<div class="admin-container">
+
+    <div class="admin-header">
+        <div class="header-left">
+            <div class="header-icon"><i class="uil uil-file-plus"></i></div>
+            <div>
+                <h1>Nueva Acta</h1>
+                <span class="role-badge">Módulo D.2 — Gestión de Actas</span>
+            </div>
+        </div>
+        <div class="user-info">
+            <div class="email">{{email}}</div>
+            <a href="/docente/actas" class="logout-btn">← Actas</a>
+        </div>
+    </div>
+
+    {{#errorMessage}}
+    <div style="background:#fee2e2;color:#991b1b;padding:12px 18px;border-radius:8px;margin-bottom:16px;">{{errorMessage}}</div>
+    {{/errorMessage}}
+
+    <div class="admin-section" style="max-width:520px;">
+        <p class="section-title">Crear nueva acta</p>
+        <form method="post" action="/docente/actas/nueva" style="display:flex;flex-direction:column;gap:16px;">
+
+            <div>
+                <label style="font-size:13px;font-weight:600;color:#374151;display:block;margin-bottom:6px;">Comisión</label>
+                <select name="comision_id" required
+                    style="width:100%;padding:9px 12px;border:1.5px solid #d1d5db;border-radius:8px;font-size:14px;">
+                    <option value="">Seleccionar comisión...</option>
+                    {{#comisiones}}
+                    <option value="{{id}}">{{codigo}} — {{nombre}}</option>
+                    {{/comisiones}}
+                </select>
+            </div>
+
+            <div>
+                <label style="font-size:13px;font-weight:600;color:#374151;display:block;margin-bottom:6px;">Período Lectivo</label>
+                <select name="periodo_id" required
+                    style="width:100%;padding:9px 12px;border:1.5px solid #d1d5db;border-radius:8px;font-size:14px;">
+                    <option value="">Seleccionar período...</option>
+                    {{#periodos}}
+                    <option value="{{id}}">{{label}}{{#activo}} (activo){{/activo}}</option>
+                    {{/periodos}}
+                </select>
+            </div>
+
+            <div>
+                <label style="font-size:13px;font-weight:600;color:#374151;display:block;margin-bottom:6px;">Instancia</label>
+                <select name="instancia" required
+                    style="width:100%;padding:9px 12px;border:1.5px solid #d1d5db;border-radius:8px;font-size:14px;">
+                    <option value="">Seleccionar instancia...</option>
+                    {{#instancias}}
+                    <option value="{{valor}}">{{label}}</option>
+                    {{/instancias}}
+                </select>
+            </div>
+
+            <div style="display:flex;gap:12px;margin-top:8px;">
+                <button type="submit"
+                    style="background:#2563eb;color:#fff;padding:10px 22px;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;">
+                    Crear Acta
+                </button>
+                <a href="/docente/actas"
+                   style="background:#f1f5f9;color:#374151;padding:10px 22px;border-radius:8px;font-size:14px;font-weight:600;text-decoration:none;">
+                    Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+</body>
+</html>
