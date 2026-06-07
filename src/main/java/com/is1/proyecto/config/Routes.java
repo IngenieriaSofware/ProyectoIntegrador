@@ -3,6 +3,7 @@ package com.is1.proyecto.config;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.is1.proyecto.controller.ActaController;
 import com.is1.proyecto.controller.AdministradorController;
 import com.is1.proyecto.controller.CarreraController;
 import com.is1.proyecto.controller.MateriaController;
@@ -22,6 +23,7 @@ import static spark.Spark.exception;
 import static spark.Spark.get;
 import static spark.Spark.notFound;
 import static spark.Spark.post;
+import static spark.Spark.put;
 import spark.template.mustache.MustacheTemplateEngine;
 
 /**
@@ -49,6 +51,7 @@ public class Routes {
         MateriaController materiaController = new MateriaController();
         PeriodoController periodoController = new PeriodoController();
         ComisionController comisionController = new ComisionController();
+        ActaController actaController = new ActaController();
         // ========================================
         // RUTAS DE AUTENTICACIÓN (sin protección)
         // ========================================
@@ -129,6 +132,27 @@ public class Routes {
 
         // GET /en_construccion - Vista en construcción
         get("/en_construccion", (req, res) -> enConstruccionController.showEnConstruccion(req, res), templateEngine);
+
+        // ========================================
+        // RUTAS: ACTAS DE CALIFICACIONES (D.2)
+        // ========================================
+
+        // API
+        get("/api/actas",                (req, res) -> actaController.listarActas(req, res));
+        post("/api/actas",               (req, res) -> actaController.crearActa(req, res));
+        get("/api/actas/:id",            (req, res) -> actaController.getActaDetalle(req, res));
+        put("/api/actas/:id/notas",      (req, res) -> actaController.guardarLoteNotas(req, res));
+        post("/api/actas/:id/cerrar",    (req, res) -> actaController.cerrarActa(req, res));
+        post("/api/actas/:id/reabrir",   (req, res) -> actaController.reabrirActa(req, res));
+        get("/api/actas/:id/auditoria",  (req, res) -> actaController.getAuditoria(req, res));
+
+        // Web (docente)
+        get("/docente/actas",                          (req, res) -> actaController.showActasList(req, res), templateEngine);
+        get("/docente/actas/nueva",                    (req, res) -> actaController.showNuevaActaForm(req, res), templateEngine);
+        post("/docente/actas/nueva",                   (req, res) -> actaController.crearActaWeb(req, res));
+        get("/docente/actas/:id",                      (req, res) -> actaController.showActaDetalle(req, res), templateEngine);
+        post("/docente/actas/:id/cerrar",              (req, res) -> actaController.cerrarActaWeb(req, res));
+        post("/docente/actas/:id/guardar-notas",       (req, res) -> actaController.guardarNotasWeb(req, res));
 
         // ========================================
         // RUTAS: GESTIÓN DE CARRERAS (B.1)
@@ -222,6 +246,12 @@ public class Routes {
         before("/admin/comisiones", AuthMiddleware.requireRole("ADMINISTRADOR"));
         before("/admin/comisiones/*", AuthMiddleware.requireRole("ADMINISTRADOR"));
         before("/docente/comisiones", AuthMiddleware.requireRole("DOCENTE"));
+
+        // Actas: auth para API, rol DOCENTE para vistas web
+        before("/api/actas",       AuthMiddleware.requireAuth);
+        before("/api/actas/*",     AuthMiddleware.requireAuth);
+        before("/docente/actas",   AuthMiddleware.requireRole("DOCENTE"));
+        before("/docente/actas/*", AuthMiddleware.requireRole("DOCENTE"));
 
         // ========================================
         // MANEJADORES DE ERRORES

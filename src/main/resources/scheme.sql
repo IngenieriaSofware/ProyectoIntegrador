@@ -294,3 +294,58 @@ CREATE TABLE IF NOT EXISTS inscripciones_comisiones (
     FOREIGN KEY (comision_id) REFERENCES comisiones(id) ON DELETE CASCADE
 );
 
+-- ========================================
+-- MÓDULO D.2 - GESTIÓN DE ACTAS
+-- ========================================
+
+CREATE TABLE IF NOT EXISTS actas (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    comision_id INTEGER NOT NULL,
+    periodo_id INTEGER NOT NULL,
+    instancia TEXT NOT NULL CHECK(instancia IN (
+        'parcial_1','parcial_2','tp',
+        'recuperatorio_1','recuperatorio_2','examen_final')),
+    estado TEXT NOT NULL DEFAULT 'abierta' CHECK(estado IN ('abierta','cerrada')),
+    fecha_cierre TIMESTAMP,
+    cerrada_por_docente_id INTEGER,
+    reabierta_por_admin_id INTEGER,
+    fecha_reapertura TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (comision_id, periodo_id, instancia),
+    FOREIGN KEY (comision_id) REFERENCES comisiones(id),
+    FOREIGN KEY (periodo_id) REFERENCES periodos_lectivos(id),
+    FOREIGN KEY (cerrada_por_docente_id) REFERENCES personas(id),
+    FOREIGN KEY (reabierta_por_admin_id) REFERENCES personas(id)
+);
+
+CREATE TABLE IF NOT EXISTS notas (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    acta_id INTEGER NOT NULL,
+    estudiante_id INTEGER NOT NULL,
+    valor REAL,
+    ausente INTEGER NOT NULL DEFAULT 0,
+    cargada_por_docente_id INTEGER NOT NULL,
+    ultima_modificacion_por INTEGER,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (acta_id, estudiante_id),
+    FOREIGN KEY (acta_id) REFERENCES actas(id),
+    FOREIGN KEY (estudiante_id) REFERENCES estudiantes(id),
+    FOREIGN KEY (cargada_por_docente_id) REFERENCES personas(id),
+    FOREIGN KEY (ultima_modificacion_por) REFERENCES personas(id)
+);
+
+CREATE TABLE IF NOT EXISTS auditoria_acta (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    acta_id INTEGER NOT NULL,
+    accion TEXT NOT NULL CHECK(accion IN (
+        'creacion','carga_nota','modificacion_nota','cierre','reapertura')),
+    realizado_por INTEGER NOT NULL,
+    detalle TEXT,
+    motivo TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (acta_id) REFERENCES actas(id),
+    FOREIGN KEY (realizado_por) REFERENCES personas(id)
+);
+

@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acta — {{instanciaLabel}}</title>
+    <link rel="stylesheet" href="/css/login-style.css">
+    <link rel="stylesheet" href="https://unicons.iconscout.com/release/v4.0.0/css/line.css">
+    <link rel="stylesheet" href="/css/style-dashboard.css">
+    <style>
+        .badge-abierta  { background:#d1fae5;color:#065f46;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700; }
+        .badge-cerrada  { background:#fee2e2;color:#991b1b;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700; }
+
+        /* tabla */
+        .notas-table { width:100%;border-collapse:collapse;font-size:14px; }
+        .notas-table thead tr { background:#1e3a5f; }
+        .notas-table thead th {
+            padding:11px 14px;color:#fff;font-weight:600;
+            text-align:left;border:none;
+        }
+        .notas-table thead th:not(:first-child) { text-align:center; }
+
+        .notas-table tbody tr { border-bottom:1px solid #e2e8f0;transition:background .1s; }
+        .notas-table tbody tr:nth-child(even) { background:#f8fafc; }
+        .notas-table tbody tr:nth-child(odd)  { background:#ffffff; }
+        .notas-table tbody tr:hover           { background:#eff6ff; }
+
+        /* filas coloreadas por estado de nota */
+        .row-cargada-ok   { background:#f0fdf4 !important; border-left:4px solid #16a34a; }
+        .row-cargada-rep  { background:#fff1f2 !important; border-left:4px solid #dc2626; }
+        .row-ausente      { background:#fefce8 !important; border-left:4px solid #ca8a04; }
+        .row-pendiente    { background:#f9fafb !important; border-left:4px solid #d1d5db; }
+        .notas-table tbody tr:hover.row-cargada-ok  { background:#dcfce7 !important; }
+        .notas-table tbody tr:hover.row-cargada-rep { background:#ffe4e6 !important; }
+        .notas-table tbody tr:hover.row-ausente     { background:#fef9c3 !important; }
+        .notas-table tbody tr:hover.row-pendiente   { background:#f1f5f9 !important; }
+
+        .notas-table td { padding:10px 14px; }
+        .notas-table td:not(:first-child):not(:nth-child(2)) { text-align:center; }
+
+        /* badges de estado */
+        .chip-ok       { display:inline-block;background:#dcfce7;color:#166534;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:700; }
+        .chip-rep      { display:inline-block;background:#fee2e2;color:#991b1b;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:700; }
+        .chip-ausente  { display:inline-block;background:#fef9c3;color:#92400e;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:700; }
+        .chip-pendiente{ display:inline-block;background:#f1f5f9;color:#6b7280;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600; }
+
+        /* input nota */
+        .nota-input {
+            width:80px;padding:6px 8px;
+            border:1.5px solid #cbd5e1;border-radius:6px;
+            font-size:14px;text-align:center;background:#fff;
+            transition:border-color .15s;
+        }
+        .nota-input:focus { border-color:#2563eb;outline:none; }
+        .nota-input.tiene-valor { border-color:#16a34a;background:#f0fdf4;font-weight:700; }
+
+        .confirm-dialog { display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:999;align-items:center;justify-content:center; }
+        .confirm-dialog.active { display:flex; }
+        .confirm-box { background:#fff;border-radius:12px;padding:28px 32px;max-width:460px;width:90%;box-shadow:0 8px 32px rgba(0,0,0,0.2); }
+
+        /* leyenda */
+        .leyenda { display:flex;gap:16px;flex-wrap:wrap;margin-bottom:16px;font-size:12px;align-items:center; }
+        .leyenda-item { display:flex;align-items:center;gap:6px; }
+        .leyenda-dot { width:12px;height:12px;border-radius:3px;flex-shrink:0; }
+    </style>
+</head>
+<body>
+<div class="admin-container">
+
+    <div class="admin-header">
+        <div class="header-left">
+            <div class="header-icon"><i class="uil uil-file-alt"></i></div>
+            <div>
+                <h1>{{instanciaLabel}} — {{materiaNombre}}</h1>
+                <span class="role-badge">{{comisionNombre}} · {{periodoLabel}}</span>
+            </div>
+        </div>
+        <div class="user-info">
+            <div class="email">{{email}}</div>
+            <a href="/docente/actas" class="logout-btn">← Actas</a>
+        </div>
+    </div>
+
+    {{#successMessage}}
+    <div style="background:#d1fae5;color:#065f46;padding:12px 18px;border-radius:8px;margin-bottom:16px;font-weight:600;">✓ {{successMessage}}</div>
+    {{/successMessage}}
+    {{#errorMessage}}
+    <div style="background:#fee2e2;color:#991b1b;padding:12px 18px;border-radius:8px;margin-bottom:16px;font-weight:600;">✗ {{errorMessage}}</div>
+    {{/errorMessage}}
+
+    <!-- Estado del acta -->
+    <div class="admin-section" style="padding:14px 18px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+        <span style="font-weight:600;color:#374151;">Estado del acta:</span>
+        {{#abierta}}<span class="badge-abierta">● Abierta</span>{{/abierta}}
+        {{#cerrada}}<span class="badge-cerrada">● Cerrada</span>{{/cerrada}}
+        {{#fechaCierre}}
+        <span style="font-size:13px;color:#6b7280;">· Cerrada el {{fechaCierre}}</span>
+        {{/fechaCierre}}
+        {{#puedeCerrar}}
+        <button onclick="document.getElementById('dialogCerrar').classList.add('active')"
+            style="margin-left:auto;background:#dc2626;color:#fff;padding:9px 20px;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;letter-spacing:.3px;">
+            Cerrar Acta
+        </button>
+        {{/puedeCerrar}}
+    </div>
+
+    <!-- Grilla de notas -->
+    <div class="admin-section">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:14px;">
+            <p class="section-title" style="margin:0;">Grilla de notas</p>
+            {{#puedeCargarNotas}}
+            <div class="leyenda">
+                <span class="leyenda-item"><span class="leyenda-dot" style="background:#16a34a;"></span>Aprobado</span>
+                <span class="leyenda-item"><span class="leyenda-dot" style="background:#dc2626;"></span>Reprobado</span>
+                <span class="leyenda-item"><span class="leyenda-dot" style="background:#ca8a04;"></span>Ausente</span>
+                <span class="leyenda-item"><span class="leyenda-dot" style="background:#d1d5db;"></span>Sin nota</span>
+            </div>
+            {{/puedeCargarNotas}}
+        </div>
+
+        {{#puedeCargarNotas}}
+        <form method="post" action="/docente/actas/{{id}}/guardar-notas" id="formNotas">
+        {{/puedeCargarNotas}}
+
+            <table class="notas-table">
+                <thead>
+                    <tr>
+                        <th style="width:35%;">Estudiante</th>
+                        <th style="width:15%;">DNI</th>
+                        <th style="width:15%;">Nota (0–10)</th>
+                        <th style="width:12%;">Ausente</th>
+                        <th style="width:23%;">Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{#notas}}
+                    <tr class="{{#aprobado}}row-cargada-ok{{/aprobado}}{{#reprobado}}row-cargada-rep{{/reprobado}}{{#ausente}}row-ausente{{/ausente}}{{#sinRegistrar}}row-pendiente{{/sinRegistrar}}">
+                        {{#puedeCargarNotas}}
+                        <input type="hidden" name="estudiante_ids" value="{{estudianteId}}">
+                        {{/puedeCargarNotas}}
+
+                        <td style="font-weight:600;color:#111827;">{{nombreCompleto}}</td>
+                        <td style="color:#6b7280;font-size:13px;">{{dni}}</td>
+
+                        <td>
+                            {{#puedeCargarNotas}}
+                            <input type="number" name="nota_{{estudianteId}}"
+                                   class="nota-input {{#notaCargada}}{{^ausente}}tiene-valor{{/ausente}}{{/notaCargada}}"
+                                   min="0" max="10" step="0.01"
+                                   value="{{valorStr}}"
+                                   id="nota_{{estudianteId}}"
+                                   onchange="onNotaChange({{estudianteId}})">
+                            {{/puedeCargarNotas}}
+                            {{^puedeCargarNotas}}
+                            <span style="font-size:14px;font-weight:700;">
+                                {{#valorStr}}{{valorStr}}{{/valorStr}}
+                                {{#sinRegistrar}}<span style="color:#9ca3af;">—</span>{{/sinRegistrar}}
+                                {{#ausente}}<span style="color:#92400e;font-style:italic;">Ausente</span>{{/ausente}}
+                            </span>
+                            {{/puedeCargarNotas}}
+                        </td>
+
+                        <td>
+                            {{#puedeCargarNotas}}
+                            <input type="checkbox" name="ausente_{{estudianteId}}"
+                                   id="ausente_{{estudianteId}}"
+                                   {{#ausente}}checked{{/ausente}}
+                                   onchange="onAusenteChange({{estudianteId}})"
+                                   style="width:18px;height:18px;cursor:pointer;accent-color:#ca8a04;">
+                            {{/puedeCargarNotas}}
+                            {{^puedeCargarNotas}}
+                            {{#ausente}}<span style="color:#ca8a04;font-weight:700;">✓</span>{{/ausente}}
+                            {{^ausente}}<span style="color:#d1d5db;">—</span>{{/ausente}}
+                            {{/puedeCargarNotas}}
+                        </td>
+
+                        <td id="estado_{{estudianteId}}">
+                            {{#aprobado}}<span class="chip-ok">✓ Aprobado · {{valorStr}}</span>{{/aprobado}}
+                            {{#reprobado}}<span class="chip-rep">✗ Reprobado · {{valorStr}}</span>{{/reprobado}}
+                            {{#ausente}}<span class="chip-ausente">Ausente</span>{{/ausente}}
+                            {{#sinRegistrar}}<span class="chip-pendiente">Sin nota</span>{{/sinRegistrar}}
+                        </td>
+                    </tr>
+                    {{/notas}}
+                </tbody>
+            </table>
+
+            {{^notas}}
+            <div style="text-align:center;padding:48px;color:#9ca3af;font-size:15px;">
+                No hay estudiantes inscriptos en esta comisión.
+            </div>
+            {{/notas}}
+
+            {{#puedeCargarNotas}}
+            <div style="margin-top:20px;display:flex;gap:12px;">
+                <button type="submit"
+                    style="background:#2563eb;color:#fff;padding:10px 24px;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;">
+                    Guardar notas
+                </button>
+                <a href="/docente/actas"
+                   style="background:#f1f5f9;color:#374151;padding:10px 24px;border-radius:8px;font-size:14px;font-weight:600;text-decoration:none;display:inline-flex;align-items:center;">
+                    Cancelar
+                </a>
+            </div>
+            {{/puedeCargarNotas}}
+
+        {{#puedeCargarNotas}}
+        </form>
+        {{/puedeCargarNotas}}
+    </div>
+</div>
+
+<!-- Diálogo confirmación cierre -->
+{{#puedeCerrar}}
+<div id="dialogCerrar" class="confirm-dialog">
+    <div class="confirm-box">
+        <h3 style="margin:0 0 12px;color:#111827;font-size:18px;">Confirmar cierre de acta</h3>
+        <p style="color:#6b7280;font-size:14px;margin:0 0 20px;line-height:1.6;">
+            Esta acción es <strong>irreversible sin intervención del Administrador</strong>.
+            Se cerrará el acta de <strong>{{instanciaLabel}}</strong> — <strong>{{materiaNombre}}</strong> — <strong>{{periodoLabel}}</strong>
+            y se actualizará la condición académica de cada estudiante.
+        </p>
+        <div style="display:flex;gap:12px;">
+            <form method="post" action="/docente/actas/{{id}}/cerrar" style="margin:0;">
+                <button type="submit"
+                    style="background:#dc2626;color:#fff;padding:10px 22px;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;">
+                    Confirmar cierre
+                </button>
+            </form>
+            <button onclick="document.getElementById('dialogCerrar').classList.remove('active')"
+                style="background:#f1f5f9;color:#374151;padding:10px 22px;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;">
+                Cancelar
+            </button>
+        </div>
+    </div>
+</div>
+{{/puedeCerrar}}
+
+<script>
+var UMBRAL = 5.0;
+
+function onNotaChange(id) {
+    var input  = document.getElementById('nota_' + id);
+    var check  = document.getElementById('ausente_' + id);
+    var row    = input.closest('tr');
+    var estado = document.getElementById('estado_' + id);
+    if (!input) return;
+
+    var val = parseFloat(input.value);
+
+    if (input.value !== '' && !isNaN(val)) {
+        if (check) check.checked = false;
+        input.classList.add('tiene-valor');
+        actualizarFila(row, estado, val >= UMBRAL ? 'ok' : 'rep', val);
+    } else {
+        input.classList.remove('tiene-valor');
+        if (!check || !check.checked) {
+            actualizarFila(row, estado, 'pendiente', null);
+        }
+    }
+}
+
+function onAusenteChange(id) {
+    var check = document.getElementById('ausente_' + id);
+    var input = document.getElementById('nota_' + id);
+    var row   = input ? input.closest('tr') : (check ? check.closest('tr') : null);
+    var estado = document.getElementById('estado_' + id);
+
+    if (check && check.checked) {
+        if (input) { input.value = ''; input.classList.remove('tiene-valor'); }
+        actualizarFila(row, estado, 'ausente', null);
+    } else {
+        if (input && input.value !== '') {
+            var val = parseFloat(input.value);
+            actualizarFila(row, estado, val >= UMBRAL ? 'ok' : 'rep', val);
+        } else {
+            actualizarFila(row, estado, 'pendiente', null);
+        }
+    }
+}
+
+function actualizarFila(row, estadoCell, tipo, valor) {
+    if (!row) return;
+    row.classList.remove('row-cargada-ok','row-cargada-rep','row-ausente','row-pendiente');
+    if (!estadoCell) return;
+
+    var chips = {
+        ok:       '<span class="chip-ok">✓ Aprobado · ' + (valor !== null ? valor.toFixed(2) : '') + '</span>',
+        rep:      '<span class="chip-rep">✗ Reprobado · ' + (valor !== null ? valor.toFixed(2) : '') + '</span>',
+        ausente:  '<span class="chip-ausente">Ausente</span>',
+        pendiente:'<span class="chip-pendiente">Sin nota</span>'
+    };
+    var clases = { ok:'row-cargada-ok', rep:'row-cargada-rep', ausente:'row-ausente', pendiente:'row-pendiente' };
+
+    row.classList.add(clases[tipo]);
+    estadoCell.innerHTML = chips[tipo];
+}
+</script>
+</body>
+</html>
