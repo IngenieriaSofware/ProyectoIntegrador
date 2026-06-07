@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.is1.proyecto.service.AdminService;
 import com.is1.proyecto.service.AuditService;
 import com.is1.proyecto.service.UserService;
@@ -62,13 +63,20 @@ public class AdministradorController {
             return "{\"error\": \"Acceso denegado\"}";
         }
 
-        int page = req.queryParams("page") != null ? Integer.parseInt(req.queryParams("page")) : 1;
-        int pageSize = req.queryParams("pageSize") != null ? Integer.parseInt(req.queryParams("pageSize")) : 10;
-        
-        List<Map<String, Object>> usuarios = adminService.listPersonas(page, pageSize);
-        
-        res.type("application/json");
-        return usuarios;
+        try {
+            int page = req.queryParams("page") != null ? Integer.parseInt(req.queryParams("page")) : 1;
+            int pageSize = req.queryParams("pageSize") != null ? Integer.parseInt(req.queryParams("pageSize")) : 10;
+            
+            List<Map<String, Object>> usuarios = adminService.listPersonas(page, pageSize);
+            
+            res.type("application/json");
+            ObjectMapper mapper = new ObjectMapper();
+            return mapper.writeValueAsString(usuarios);
+        } catch (Exception e) {
+            res.status(500);
+            res.type("application/json");
+            return "{\"error\": \"Error al cargar usuarios: " + e.getMessage() + "\"}";
+        }
     }
 
     /**
@@ -83,16 +91,23 @@ public class AdministradorController {
             return "{\"error\": \"Acceso denegado\"}";
         }
 
-        String query = req.queryParams("q");
-        if (query == null || query.isEmpty()) {
+        try {
+            String query = req.queryParams("q");
+            if (query == null || query.isEmpty()) {
+                res.type("application/json");
+                return "[]";
+            }
+            
+            List<Map<String, Object>> resultados = adminService.searchPersonas(query);
+            
             res.type("application/json");
-            return "[]";
+            ObjectMapper mapper = new ObjectMapper();
+            return mapper.writeValueAsString(resultados);
+        } catch (Exception e) {
+            res.status(500);
+            res.type("application/json");
+            return "{\"error\": \"Error al buscar usuarios: " + e.getMessage() + "\"}";
         }
-        
-        List<Map<String, Object>> resultados = adminService.searchPersonas(query);
-        
-        res.type("application/json");
-        return resultados;
     }
 
     /**
