@@ -19,9 +19,11 @@ document.addEventListener("DOMContentLoaded", function() {
   const loginForm = document.querySelector(".login_form form");
   if (loginForm) {
     loginForm.addEventListener("submit", async function(e) {
+      const identifierInput = this.querySelector("input[name='identifier']");
+      if (!identifierInput) return; // not a login form, let it submit normally
       e.preventDefault();
-      
-      const identifier = this.querySelector("input[name='identifier']").value;
+
+      const identifier = identifierInput.value;
       const password = this.querySelector("input[name='password']").value;
       
       try {
